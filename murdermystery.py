@@ -2,6 +2,7 @@
 from tkinter import *
 from PIL import ImageTk, Image
 import os
+import random
 
 ##temporary map used for player movement testing
 loc_list = [
@@ -69,21 +70,24 @@ class Player:
         return move_error
 
 
-#test player
-bob = Player("Bob","F")
-print(str(bob))
-print(bob.move())
+# #test player
+# bob = Player("Bob","F")
+# print(str(bob))
+# print(bob.move())
 
 
 ### NPC Class ###
 class NPC:
-    def __init__(self, name, location, item):
+    def __init__(self, name):
         self.name = name
-        self._location = location
-        self._item = item
+        
     
-    def __str__(self):
-        return "this is an npc"
+    # def __str__(self):
+    #     return "this is an npc"
+    
+    # def interact(self):
+    #     pass
+
     
 
 
@@ -96,22 +100,86 @@ class Loc:
         return ""
 
 
+### GUI Class ###
 class mapgui:
     def __init__(self):
+        root = Tk()
+        root.title("Tkinter Image test")
+        root.geometry('600x400')
+        img = ImageTk.PhotoImage(Image.open("map1.png"))
+
+        ##defining the panel sizes
+        panel = Label(root, image = img)
+        panel.pack(side = "left", expand = "False")
+
+        ##runs root loop
+        root.mainloop()
+
+
+### Weapons Class ###
+class Weapon:
+    def __init__(self,name,description):
+        self.name = name
+        self.description = description
+        self.holder = None
+
+    def __str__(self):
         pass
 
+    def assign_holder(self, npc):
+        self.holder = npc
+        
 
-##testing printing of image for future map
-root = Tk()
-root.title("Tkinter Image test")
-root.geometry('600x400')
-img = ImageTk.PhotoImage(Image.open("wavestest.jpeg"))
+npc_list = [NPC("John"), NPC("Mary"), NPC("Tom")]
 
-##defining the panel sizes
-panel = Label(root, image = img)
-panel.pack(side = "left", expand = "False")
+weapon_list = [Weapon("Revolver","Shot through the head"),
+Weapon("Dagger","Stabbed through the aorta artery"),
+Weapon("Poison","Cyanide pill hid inside the dinner"),
+Weapon("Crowbar","Head smashed in by a steel crowbar"),
+Weapon("Bible","Head flattened by the word")]
+### Setting values to different thingz ###
+#weapons = ["Revolver","Dagger","Poison","Rope","Crowbar","Bible"]
 
-##runs root loop
-root.mainloop()
+
+### Shuffling the items randomly ###
+random.shuffle(npc_list)
+random.shuffle(weapon_list)
+
+### Assign weapons to NPCs ###
+for npc, weapon in zip(npc_list, weapon_list):
+    Weapon.assign_holder(weapon,npc)
+    #print(f"{Weapon.name} is held by {NPC.name}")
+    print(weapon.name," is held by ",npc.name)
+    #print(self.holder)
+# If the number of NPCs and weapons are different, handle the remaining NPCs or weapons as needed
+for npc in npc_list[len(weapon_list):]:
+    print(f"No weapon assigned to {npc.name}")
+for weapon in weapon_list[len(npc_list):]:
+    print(f"{weapon.name} is not held by any NPC")
+
+
+mapinit = mapgui()
+mapinit.__init__("")
+
+
+
+
+
+
+
+
+
+# ##testing printing of image for future map
+# root = Tk()
+# root.title("Tkinter Image test")
+# root.geometry('600x400')
+# img = ImageTk.PhotoImage(Image.open("wavestest.jpeg"))
+
+# ##defining the panel sizes
+# panel = Label(root, image = img)
+# panel.pack(side = "left", expand = "False")
+
+# ##runs root loop
+# root.mainloop()
 
 
