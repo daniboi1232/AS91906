@@ -1,6 +1,6 @@
 #Import neccesary modules and libraries
 from tkinter import *
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageFilter
 import os
 import random
 
@@ -105,15 +105,31 @@ class mapgui:
     def __init__(self):
         root = Tk()
         root.title("Tkinter Image test")
-        root.geometry('600x400')
-        img = ImageTk.PhotoImage(Image.open("map1.png"))
-
+        original_image = Image.open("map1.png")
+        max_width = 800
+        max_height = 600
+        resized_image = mapgui.resize_image(original_image, max_width, max_height)
+        img = ImageTk.PhotoImage(resized_image)
         ##defining the panel sizes
         panel = Label(root, image = img)
         panel.pack(side = "left", expand = "False")
-
-        ##runs root loop
+        # root.geometry('600x400')
+        #Adjusting the geometry of the window according to the size of the image
+        root.geometry(f"{resized_image.width}x{resized_image.height}")
         root.mainloop()
+
+    def __str__(self):
+        pass
+
+    def resize_image(image, max_width, max_height):
+        width, height = image.size
+        if width > max_width or height > max_height:
+            aspect_ratio = min(max_width / width, max_height / height)
+            new_width = int(width * aspect_ratio)
+            new_height = int(height * aspect_ratio)
+            return image.resize((new_width, new_height))
+        return image
+    
 
 
 ### Weapons Class ###
@@ -159,7 +175,7 @@ for weapon in weapon_list[len(npc_list):]:
 
 
 mapinit = mapgui()
-mapinit.__init__("")
+
 
 
 
