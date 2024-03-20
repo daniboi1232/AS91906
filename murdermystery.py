@@ -105,7 +105,7 @@ class mapgui:
     def __init__(self):
         root = Tk()
         root.title("Tkinter Image test")
-        original_image = Image.open("map1.png")
+        original_image = Image.open("map2.png")
         max_width = 800
         max_height = 600
         resized_image = mapgui.resize_image(original_image, max_width, max_height)
