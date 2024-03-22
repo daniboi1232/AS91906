@@ -1,19 +1,20 @@
 #Import neccesary modules and libraries
-from tkinter import *
-from PIL import ImageTk, Image, ImageFilter
+from tkinter import Tk, Canvas
+from PIL import ImageTk, Image
 import os
 import random
 
-##temporary map used for player movement testing
-loc_list = [
-    {"location": "A", "dest": ["B", "C", "D", "E", "F", "G"]},
-    {"location": "B", "dest": ["C", "D", "E", "F", "G"]},
-    {"location": "C", "dest": ["D", "E", "F", "G"]},
-    {"location": "D", "dest": ["E", "F", "G"]},
-    {"location": "E", "dest": ["F", "G"]},
-    {"location": "F", "dest": ["G"]},
-    {"location": "G", "dest": []}
-]
+### temporary map used for player movement testing ###
+### Turns out i dont need it ###
+# loc_list = [
+#     {"location": "A", "dest": ["B", "C", "D", "E", "F", "G"]},
+#     {"location": "B", "dest": ["C", "D", "E", "F", "G"]},
+#     {"location": "C", "dest": ["D", "E", "F", "G"]},
+#     {"location": "D", "dest": ["E", "F", "G"]},
+#     {"location": "E", "dest": ["F", "G"]},
+#     {"location": "F", "dest": ["G"]},
+#     {"location": "G", "dest": []}
+# ]
 
 ### Player Class ###
 class Player:
@@ -58,16 +59,7 @@ class Player:
     #     pass
 
 
-    #def move to change the location of player based on players input
-    def move(self):
-        dest = str(input('Where do you want to move? ')).upper()
-        for loc in loc_list:
-            if loc["location"] == self._location:
-                if dest in loc["dest"]:
-                    self._location = dest
-                    return dest
-        move_error = "Sorry But You Cannot Move There"
-        return move_error
+    ### def move to change the location of player based on players input moved to the map class due to different format ###
 
 
 # #test player
@@ -103,24 +95,58 @@ class Loc:
 ### GUI Class ###
 class mapgui:
     def __init__(self):
-        root = Tk()
-        root.title("Tkinter Image test")
-        original_image = Image.open("map2.png")
-        max_width = 800
+        # Initialize Tkinter window
+        self.root = Tk()
+        self.root.title("Movable Icon")
+
+        # Load the background image
+        original_image = Image.open("map3.png")
+        max_width = 600
         max_height = 600
-        resized_image = mapgui.resize_image(original_image, max_width, max_height)
-        img = ImageTk.PhotoImage(resized_image)
-        ##defining the panel sizes
-        panel = Label(root, image = img)
-        panel.pack(side = "left", expand = "False")
-        # root.geometry('600x400')
-        #Adjusting the geometry of the window according to the size of the image
-        root.geometry(f"{resized_image.width}x{resized_image.height}")
-        root.mainloop()
+        resized_image = self.resize_image(original_image, max_width, max_height)
+        self.bg_img = ImageTk.PhotoImage(resized_image)
 
-    def __str__(self):
-        pass
+        # Create a canvas
+        self.canvas = Canvas(self.root, width=max_width, height=max_height)
+        self.canvas.pack()
 
+        # Add the background image to the canvas
+        self.canvas.create_image(0, 0, anchor="nw", image=self.bg_img)
+
+        # Add a movable icon (rectangle)
+        self.icon = self.canvas.create_rectangle(25, 25, 50, 50, fill="red")
+
+        # Start location
+        self.icon_x = 50
+        self.icon_y = 50
+
+        # Bind arrow key events to move the icon
+        self.root.bind_all("<Left>", self.move_left)
+        self.root.bind_all("<Right>", self.move_right)
+        self.root.bind_all("<Up>", self.move_up)
+        self.root.bind_all("<Down>", self.move_down)
+
+        # Start the Tkinter event loop
+        self.root.mainloop()
+
+    def move_left(self, event):
+        self.move_icon(-20, 0)
+
+    def move_right(self, event):
+        self.move_icon(20, 0)
+
+    def move_up(self, event):
+        self.move_icon(0, -20)
+
+    def move_down(self, event):
+        self.move_icon(0, 20)
+
+    def move_icon(self, delta_x, delta_y):
+        self.icon_x += delta_x
+        self.icon_y += delta_y
+        self.canvas.move(self.icon, delta_x, delta_y)
+
+    @staticmethod
     def resize_image(image, max_width, max_height):
         width, height = image.size
         if width > max_width or height > max_height:
@@ -129,7 +155,6 @@ class mapgui:
             new_height = int(height * aspect_ratio)
             return image.resize((new_width, new_height))
         return image
-    
 
 
 ### Weapons Class ###
