@@ -1,5 +1,10 @@
-from tkinter import Tk, Canvas
+from tkinter import *
+from tkinter import Tk, Canvas, ttk
 from PIL import Image, ImageTk
+
+obj_collision = 0
+
+
 
 class MapGUI:
     def __init__(self):
@@ -10,7 +15,7 @@ class MapGUI:
         # Load the background image
         original_image = Image.open("map3.png")
         max_width = 600
-        max_height = 600
+        max_height = 800
         resized_image = self.resize_image(original_image, max_width, max_height)
         self.bg_img = ImageTk.PhotoImage(resized_image)
 
@@ -25,31 +30,47 @@ class MapGUI:
         church_to_library = [()]
 
         # Building Boundaries
-        church = [(13,25),(95,165)]
-        library = [(185,18),(293,142)]
-        bank = [(365,12),(448,95)]
-        town_square = [(317,138),(425,202)]
-        market = [(485,162),(573,310)]
-        town_hall = [(306,245),(388,328)]
-        tavern = [(54,221),(172,323)]
-        farm_stead = [(12,401),(136,534)]
-        riverside = [(215,450),(323,545)]
-        blacksmith = [(414,390),(550,545)]
+        # church = [(13,25),(95,165)]
+        # library = [(185,18),(293,142)]
+        # bank = [(365,12),(448,95)]
+        # town_square = [(317,138),(425,202)]
+        # market = [(485,162),(573,310)]
+        # town_hall = [(306,245),(388,328)]
+        # tavern = [(54,221),(172,323)]
+        # farm_stead = [(12,401),(136,534)]
+        # riverside = [(215,450),(323,545)]
+        # blacksmith = [(414,390),(550,545)]
+
+        self.building_boundaries = {
+            "church": [(13,25),(95,165)],
+            "library": [(185,18),(293,142)],
+            "bank": [(365,12),(448,95)],
+            "town_square": [(317,138),(425,202)],
+            "market": [(485,162),(573,310)],
+            "town_hall": [(306,245),(388,328)],
+            "tavern": [(54,221),(172,323)],
+            "farm_stead": [(12,401),(136,534)],
+            "riverside": [(215,450),(323,545)],
+            "blacksmith": [(414,390),(550,545)]
+        }
+
 
         # Draw road boundaries
-        self.canvas.create_rectangle(*church, fill="", outline="red", tags="church_coord")
-        self.canvas.create_rectangle(*library, fill="", outline="blue", tags="library_coord")
-        self.canvas.create_rectangle(*bank, fill="", outline="blue", tags="bank_coord")
-        self.canvas.create_rectangle(*town_square, fill="", outline="blue", tags="town_square_coord")
-        self.canvas.create_rectangle(*market, fill="", outline="blue", tags="market_coord")
-        self.canvas.create_rectangle(*town_hall, fill="", outline="blue", tags="town_hall_coord")
-        self.canvas.create_rectangle(*tavern, fill="", outline="blue", tags="tavern_coord")
-        self.canvas.create_rectangle(*farm_stead, fill="", outline="blue", tags="farm_stead_coord")
-        self.canvas.create_rectangle(*riverside, fill="", outline="blue", tags="riverside_coord")
-        self.canvas.create_rectangle(*blacksmith, fill="", outline="blue", tags="blacksmith_coord")
+        # self.canvas.create_rectangle(*church, fill="", outline="red", tags="church_coord")
+        # self.canvas.create_rectangle(*library, fill="", outline="blue", tags="library_coord")
+        # self.canvas.create_rectangle(*bank, fill="", outline="blue", tags="bank_coord")
+        # self.canvas.create_rectangle(*town_square, fill="", outline="blue", tags="town_square_coord")
+        # self.canvas.create_rectangle(*market, fill="", outline="blue", tags="market_coord")
+        # self.canvas.create_rectangle(*town_hall, fill="", outline="blue", tags="town_hall_coord")
+        # self.canvas.create_rectangle(*tavern, fill="", outline="blue", tags="tavern_coord")
+        # self.canvas.create_rectangle(*farm_stead, fill="", outline="blue", tags="farm_stead_coord")
+        # self.canvas.create_rectangle(*riverside, fill="", outline="blue", tags="riverside_coord")
+        # self.canvas.create_rectangle(*blacksmith, fill="", outline="blue", tags="blacksmith_coord")
 
         # Connecting Mapgui to border control
-        self.border_control = Border_Control(self.canvas)
+        # self.border_control = Border_Control(self.canvas)
+
+        self.border_control = BorderControl(self.canvas, self.building_boundaries)
 
         # Assign boundaries to events
         # self.canvas.tag_bind("church_coord", lambda event: self.border_control.church_func("church_coord"))
@@ -58,6 +79,9 @@ class MapGUI:
 
         # Add a movable icon (rectangle)
         self.icon = self.canvas.create_rectangle(25,25,50,50, fill="red")
+
+        # Create a text object for displaying collision messages
+        self.collision_text = self.canvas.create_text(25, 70, text="", anchor="nw", fill="white")
 
         # Start location
         self.icon_x = 50
@@ -89,6 +113,32 @@ class MapGUI:
         self.icon_y += delta_y
         self.canvas.move(self.icon, delta_x, delta_y)
 
+        # Check for collision with building boundaries
+        for boundary_name, boundary_coords in self.building_boundaries.items():
+            if self.check_collision(self.icon, boundary_coords):
+                # Call the corresponding building method in BorderControl
+                getattr(self.border_control, f"{boundary_name}_func")()
+                text_x = 10  # Adjust left margin
+                text_y = self.canvas.winfo_height() + 10  # Below the canvas
+                self.canvas.coords(self.collision_text, text_x, text_y)
+                self.canvas.itemconfig(self.collision_text, text=f"Collided with {boundary_name}")
+
+    
+
+    def check_collision(self, obj_id, boundary_coords):
+        # Get the coordinates of the object
+        obj_x1, obj_y1, obj_x2, obj_y2 = self.canvas.coords(obj_id)
+
+        # Get the coordinates of the building boundary
+        boundary_x1, boundary_y1 = boundary_coords[0]
+        boundary_x2, boundary_y2 = boundary_coords[1]
+
+        # Check for collision
+        if (obj_x1 < boundary_x2 and obj_x2 > boundary_x1 and
+            obj_y1 < boundary_y2 and obj_y2 > boundary_y1):
+            return True
+        return False
+
     @staticmethod
     def resize_image(image, max_width, max_height):
         width, height = image.size
@@ -102,41 +152,57 @@ class MapGUI:
     
 
 # Class to handle borders
-class Border_Control:
-    def __init__(self,canvas):
+class BorderControl:
+    def __init__(self, canvas, building_boundaries):
         self.canvas = canvas
+        self.building_boundaries = building_boundaries
 
-    # Function for building boundaries
+    # Define a method for each building
     def church_func(self):
-        pass
+        print("Collided with church")
 
     def library_func(self):
-        pass
+        global obj_collision
+        if obj_collision == 0:
+            obj_collision = 1
+            print (obj_collision)
+            text = Tk.Label(self,text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+            text.place(x=10,y=700)
+            # Insert instructions and info here
+            
+            # win.mainloop()
+        else: 
+            print("Collided with library")
 
-    def library_func(self):
-        pass
+    def bank_func(self):
+        print("Collided with bank")
 
-    def library_func(self):
-        pass
+    def town_square_func(self):
+        print("Collided with town square")
 
-    def library_func(self):
-        pass
+    def market_func(self):
+        print("Collided with market")
 
-    def library_func(self):
-        pass
+    def town_hall_func(self):
+        print("Collided with town hall")
 
-    def library_func(self):
-        pass
+    def tavern_func(self):
+        print("Collided with tavern")
 
-    def library_func(self):
-        pass
+    def farm_stead_func(self):
+        print("Collided with farm stead")
 
-    def library_func(self):
-        pass
+    def riverside_func(self):
+        print("Collided with riverside")
 
-    def library_func(self):
-        pass
+    def blacksmith_func(self):
+        print("Collided with blacksmith")
 
-    
+def open_popup():
+   top= Toplevel(win)
+   top.geometry("550x250")
+   top.title("Child Window")
+   Label(top, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+
 # Create an instance of MapGUI
 MapGUI()
