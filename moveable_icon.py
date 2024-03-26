@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import Tk, Canvas, ttk
+from tkinter import Tk, Canvas, ttk, Label
 from PIL import Image, ImageTk
 
 obj_collision = 0
@@ -7,7 +7,11 @@ obj_collision = 0
 
 
 class MapGUI:
+    """Class representing the main graphical user interface (GUI) for the application."""
+
     def __init__(self):
+        """Initialize the MapGUI class."""
+
         # Initialize Tkinter window
         self.root = Tk()
         self.root.title("Movable Icon")
@@ -81,8 +85,8 @@ class MapGUI:
         self.icon = self.canvas.create_rectangle(25,25,50,50, fill="red")
 
         # Create a text object for displaying collision messages
-        self.collision_text = self.canvas.create_text(25, 70, text="", anchor="nw", fill="white")
-
+        self.collision_text = Label(self.root, text="", font=('Mistral 18 bold'))
+        self.collision_text.pack()
         # Start location
         self.icon_x = 50
         self.icon_y = 50
@@ -113,6 +117,16 @@ class MapGUI:
         self.icon_y += delta_y
         self.canvas.move(self.icon, delta_x, delta_y)
 
+        if self.check_collision:
+            self.collision_text.config(text="Collision detected")
+            # Calculate the coordinates to place the text below the canvas
+            text_x = 0  # Adjust horizontally as needed
+            text_y = self.canvas.winfo_height() + 10  # Place below the canvas with some margin
+            self.collision_text.place(x=text_x, y=text_y)
+        else:
+            self.collision_text.config(text="")  # Clear the text if no collision
+
+
         # Check for collision with building boundaries
         for boundary_name, boundary_coords in self.building_boundaries.items():
             if self.check_collision(self.icon, boundary_coords):
@@ -141,6 +155,16 @@ class MapGUI:
 
     @staticmethod
     def resize_image(image, max_width, max_height):
+        """Resize the given image to fit within the specified dimensions.
+
+        Args:
+            image (PIL.Image.Image): The image to resize.
+            max_width (int): The maximum width for the resized image.
+            max_height (int): The maximum height for the resized image.
+
+        Returns:
+            PIL.Image.Image: The resized image.
+        """
         width, height = image.size
         if width > max_width or height > max_height:
             aspect_ratio = min(max_width / width, max_height / height)
@@ -153,7 +177,15 @@ class MapGUI:
 
 # Class to handle borders
 class BorderControl:
+    """Class responsible for controlling collisions and interactions with building boundaries."""
+
     def __init__(self, canvas, building_boundaries):
+        """Initialize the BorderControl class.
+
+        Args:
+            canvas (tk.Canvas): The Tkinter canvas on which the objects are drawn.
+            building_boundaries (dict): A dictionary containing building boundaries.
+        """        
         self.canvas = canvas
         self.building_boundaries = building_boundaries
 
@@ -165,9 +197,10 @@ class BorderControl:
         global obj_collision
         if obj_collision == 0:
             obj_collision = 1
-            print (obj_collision)
-            text = Tk.Label(self,text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
-            text.place(x=10,y=700)
+            label = Label(self.canvas,text= "Hello World!", font=('Mistral 18 bold')).place(x=20,y=600)
+            # label.place(x=150,y=80)
+            # Tk.update(label)
+            # label.config(fg = "white")
             # Insert instructions and info here
             
             # win.mainloop()
@@ -199,10 +232,11 @@ class BorderControl:
         print("Collided with blacksmith")
 
 def open_popup():
-   top= Toplevel(win)
-   top.geometry("550x250")
-   top.title("Child Window")
-   Label(top, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+    """open_popup creates a new window on-top of the main window"""
+    top= Toplevel(win)
+    top.geometry("550x250")
+    top.title("Child Window")
+    Label(top, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
 
 # Create an instance of MapGUI
 MapGUI()
