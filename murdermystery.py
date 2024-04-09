@@ -145,23 +145,31 @@ class MapGUI:
             "blacksmith": [(414,390),(550,545)]
         }
 
+        self.road_boundaries = {
+            # Add road boundaries here
+            # Example:
+            "churchtolib": [(95, 45), (185, 110)],
+            # "libtobank": [(x1, y1), (x2, y2)],
+            # "libtobank": [(x1, y1), (x2, y2)],
+            # "libtobank": [(x1, y1), (x2, y2)],
 
-        # Draw road boundaries
-        # self.canvas.create_rectangle(*church, fill="", outline="red", tags="church_coord")
-        # self.canvas.create_rectangle(*library, fill="", outline="blue", tags="library_coord")
-        # self.canvas.create_rectangle(*bank, fill="", outline="blue", tags="bank_coord")
-        # self.canvas.create_rectangle(*town_square, fill="", outline="blue", tags="town_square_coord")
-        # self.canvas.create_rectangle(*market, fill="", outline="blue", tags="market_coord")
-        # self.canvas.create_rectangle(*town_hall, fill="", outline="blue", tags="town_hall_coord")
-        # self.canvas.create_rectangle(*tavern, fill="", outline="blue", tags="tavern_coord")
-        # self.canvas.create_rectangle(*farm_stead, fill="", outline="blue", tags="farm_stead_coord")
-        # self.canvas.create_rectangle(*riverside, fill="", outline="blue", tags="riverside_coord")
-        # self.canvas.create_rectangle(*blacksmith, fill="", outline="blue", tags="blacksmith_coord")
+        }
 
+
+        # Draw building boundaries
+        for building_name, boundary_coords in self.building_boundaries.items():
+            x1, y1 = boundary_coords[0]
+            x2, y2 = boundary_coords[1]
+            self.canvas.create_rectangle(x1, y1, x2, y2, outline="red")
+
+        for road_name, boundary_coords in self.road_boundaries.items():
+            x1, y1 = boundary_coords[0]
+            x2, y2 = boundary_coords[1]
+            self.canvas.create_rectangle(x1, y1, x2, y2, outline="blue")
         # Connecting Mapgui to border control
         # self.border_control = Border_Control(self.canvas)
-
         self.border_control = BorderControl(self.canvas, self.building_boundaries)
+        self.border_control = BorderControl(self.canvas, self.road_boundaries)
 
         # Assign boundaries to events
         # self.canvas.tag_bind("church_coord", lambda event: self.border_control.church_func("church_coord"))
@@ -169,7 +177,7 @@ class MapGUI:
 
 
         # Add a movable icon (rectangle)
-        self.icon = self.canvas.create_rectangle(25,25,50,50, fill="red")
+        self.icon = self.canvas.create_rectangle(50,50,75,75, fill="red")
 
         # Create a text object for displaying collision messages
         self.collision_text = Label(self.root, text="", font=('Mistral 18 bold'))
@@ -200,29 +208,62 @@ class MapGUI:
         self.move_icon(0, 20)
 
     def move_icon(self, delta_x, delta_y):
-        self.icon_x += delta_x
-        self.icon_y += delta_y
-        self.canvas.move(self.icon, delta_x, delta_y)
+        new_x = self.icon_x + delta_x
+        new_y = self.icon_y + delta_y
 
-        if self.check_collision:
-            self.collision_text.config(text="Collision detected")
-            # Calculate the coordinates to place the text below the canvas
-            text_x = 0  # Adjust horizontally as needed
-            text_y = self.canvas.winfo_height() + 10  # Place below the canvas with some margin
+        # Check if the new position stays within any building boundaries
+        within_building_boundary = False
+        for boundary_coords in self.building_boundaries.values():
+            if self.is_within_boundary(new_x, new_y, boundary_coords):
+                within_building_boundary = True
+                break
+
+        if within_building_boundary:
+            # Move the icon only if the new position stays within any building boundary
+            self.icon_x = new_x
+            self.icon_y = new_y
+            self.canvas.move(self.icon, delta_x, delta_y)
+
+            # Check for collision with building boundaries
+            collided_building = None
+            for boundary_name, boundary_coords in self.building_boundaries.items():
+                if self.check_collision(self.icon, boundary_coords):
+                    collided_building = boundary_name
+                    break
+
+            # Update collision status and clear text accordingly
+            if collided_building:
+                # Collision detected with a building
+                self.border_control.update_collision_status(collided_building, True)
+                self.show_collision_text(collided_building)
+            else:
+                # No collision detected with any building
+                self.border_control.clear_all_collision_status()
+                self.hide_collision_text()
+
+    def is_within_boundary(self, x, y, boundary_coords):
+        """Check if the given coordinates are within the specified boundary."""
+        boundary_x1, boundary_y1 = boundary_coords[0]
+        boundary_x2, boundary_y2 = boundary_coords[1]
+        if (boundary_x1 < x < boundary_x2 and boundary_y1 < y < boundary_y2):
+            return True
+        return False
+        
+    def show_collision_text(self, building_name):
+        """Show collision text for the specified building."""
+        if not self.border_control.get_collision_status(building_name):
+            # Collision text should be displayed only if collision status is False
+            self.collision_text.config(text=f"Collided with {building_name}")
+            text_x = 10  # Adjust left margin
+            text_y = self.canvas.winfo_height() + 10  # Below the canvas
+            self.canvas.coords(self.collision_text, text_x, text_y)
             self.collision_text.place(x=text_x, y=text_y)
-        else:
-            self.collision_text.config(text="")  # Clear the text if no collision
+
+    def hide_collision_text(self):
+        """Hide collision text."""
+        self.collision_text.config(text="")  # Clear the text
 
 
-        # Check for collision with building boundaries
-        for boundary_name, boundary_coords in self.building_boundaries.items():
-            if self.check_collision(self.icon, boundary_coords):
-                # Call the corresponding building method in BorderControl
-                getattr(self.border_control, f"{boundary_name}_func")()
-                text_x = 10  # Adjust left margin
-                text_y = self.canvas.winfo_height() + 10  # Below the canvas
-                self.canvas.coords(self.collision_text, text_x, text_y)
-                self.canvas.itemconfig(self.collision_text, text=f"Collided with {boundary_name}")
 
     
 
@@ -276,23 +317,33 @@ class BorderControl:
         self.canvas = canvas
         self.building_boundaries = building_boundaries
 
+        # Dictionary to keep track of collision status for each building
+        self.collision_status = {building: False for building in building_boundaries}
+
+    def update_collision_status(self, building_name, status):
+        """Update collision status for the specified building."""
+        self.collision_status[building_name] = status
+
+    def clear_all_collision_status(self):
+        """Clear collision status for all buildings."""
+        for building in self.collision_status:
+            self.collision_status[building] = False
+
+    def get_collision_status(self, building_name):
+        """Get collision status for the specified building."""
+        return self.collision_status.get(building_name, False)
+
     # Define a method for each building
     def church_func(self):
         print("Collided with church")
 
     def library_func(self):
         global obj_collision
-        if obj_collision == 0:
-            obj_collision = 1
-            label = Label(self.canvas,text= "Hello World!", font=('Mistral 18 bold')).place(x=20,y=600)
-            # label.place(x=150,y=80)
-            # Tk.update(label)
-            # label.config(fg = "white")
-            # Insert instructions and info here
-            
-            # win.mainloop()
-        else: 
-            print("Collided with library")
+        if not self.collision_status["library"]:
+            self.collision_status["library"] = True
+            Label(self.canvas, text="Hello world!", font=('Mistral 18 bold')).place(x=20, y=600)
+        else:
+            print("Already collided with library")
 
     def bank_func(self):
         print("Collided with bank")
@@ -317,6 +368,9 @@ class BorderControl:
 
     def blacksmith_func(self):
         print("Collided with blacksmith")
+
+    def churchtolib(self):
+        print("collided with boundary")
 
 # def open_popup():
 #     """open_popup creates a new window on-top of the main window"""

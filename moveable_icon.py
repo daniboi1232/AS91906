@@ -231,12 +231,12 @@ class BorderControl:
     def blacksmith_func(self):
         print("Collided with blacksmith")
 
-def open_popup():
-    """open_popup creates a new window on-top of the main window"""
-    top= Toplevel(win)
-    top.geometry("550x250")
-    top.title("Child Window")
-    Label(top, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
+# def open_popup():
+#     """open_popup creates a new window on-top of the main window"""
+#     top= Toplevel(win)
+#     top.geometry("550x250")
+#     top.title("Child Window")
+#     Label(top, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
 
 # Create an instance of MapGUI
 MapGUI()
