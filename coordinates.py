@@ -34,9 +34,6 @@ class MapGUI:
         # # Add a movable icon (rectangle)
         # self.icon = self.canvas.create_rectangle(50,50,75,75, fill="red")
 
-        # Road Boundaries
-        church_to_library = [()]
-
         # Building Boundaries
         # church = [(13,25),(95,165)]
         # library = [(185,18),(293,142)]
@@ -67,11 +64,17 @@ class MapGUI:
             # Example:
             "church-lib": [(95, 46), (185, 108)],
             "lib-bank": [(293, 29), (365, 90)],
-            "lib-tav,twnhall": [(210, 142), (210, 245), (172,245), (172, 294), (306, 294), (306, 251), (263,251), (263,142), (210, 142)],
+            "lib-rd": [(210,142),(263,245)],
+            "rd-twnhll,tav": [(172,245),(306,294)],
             "tav-farm": [(57, 323), (120, 401)],
             "bank-twnsq": [(370,95),(414,138)],
+            "bank-rd2": [(448,29),(552,77)],
+            "rd2-market": [(500,77),(552,162)],
             "twnsq-twnhall": [(329,202),(377,245)],
-
+            "market-blksmth": [(490,390),(545,310)], """not working for some reason"""
+            "farm-rvrsde": [(136,465),(215,515)],
+            "rvrsde-blksmth": [(323,465),(414,522)],
+            "twnhall-market": [(388,255),(485,300)]
         }
 
 
@@ -79,31 +82,15 @@ class MapGUI:
         for building_name, boundary_coords in self.building_boundaries.items():
             x1, y1 = boundary_coords[0]
             x2, y2 = boundary_coords[1]
-            self.canvas.create_rectangle(x1, y1, x2, y2, outline="red")
+            self.canvas.create_rectangle(x1, y1, x2, y2, outline="")
+            # self.canvas.create_rectangle(x1, y1, x2, y2, outline="red")
         # Draw "T" shape boundaries
         for road_name, boundary_coords in self.road_boundaries.items():
             # Check for "T" shape and draw lines accordingly
-            if road_name == "lib-tav,twnhall":
                 x1, y1 = boundary_coords[0]
                 x2, y2 = boundary_coords[1]
-                x3, y3 = boundary_coords[2]
-                x4, y4 = boundary_coords[3]
-                x5, y5 = boundary_coords[4]
-                x6, y6 = boundary_coords[5]
-                x7, y7 = boundary_coords[6]
-                x8, y8 = boundary_coords[7]
-                x9, y9 = boundary_coords[8]
-
-                
-                # Draw horizontal line
-                self.canvas.create_line(x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8, x9, y9, fill="yellow", width=2)
-                
-                # Draw vertical line
-                self.canvas.create_line(x2, y2, x3, y3, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8, x9, y9, fill="yellow", width=2)
-            else:
-                x1, y1 = boundary_coords[0]
-                x2, y2 = boundary_coords[1]
-                self.canvas.create_rectangle(x1, y1, x2, y2, outline="blue")
+                self.canvas.create_rectangle(x1, y1, x2, y2, outline="")
+                # self.canvas.create_rectangle(x1, y1, x2, y2, outline="blue")
         # Connecting Mapgui to border control
         # self.border_control = Border_Control(self.canvas)
         self.border_control = BorderControl(self.canvas, self.building_boundaries)
@@ -118,11 +105,14 @@ class MapGUI:
         self.icon = self.canvas.create_rectangle(50,50,75,75, fill="red")
 
         # Create a text object for displaying collision messages
-        self.collision_text = Label(self.root, text="jksdhfl", font=('Mistral 18 bold'))
+        self.collision_text = Label(self.root, text="You are at the ", font=('Mistral 18 bold'))
         self.collision_text.pack()
         # Start location
         self.icon_x = 62.5
         self.icon_y = 62.5
+
+        # # Testing for location of icon
+        # self.icon2 = self.canvas.create_rectangle(self.icon_x, self.icon_y,self.icon_x,self.icon_y, fill="black")
 
         # Bind arrow key events to move the icon
         self.root.bind_all("<Left>", self.move_left)
@@ -184,30 +174,82 @@ class MapGUI:
 
         print(f"New position: ({new_x}, {new_y})")
 
-        overlapping_boundary = None
-        for boundary_name, boundary_coords in self.building_boundaries.items():
-            if self.is_overlapping(new_x, new_y, boundary_coords):
-                overlapping_boundary = boundary_name
-                break
-
-        print(f"Overlapping boundary: {overlapping_boundary}")
-
-        for boundary_name, boundary_coords in self.road_boundaries.items():
-            if self.is_overlapping(new_x, new_y, boundary_coords):
-                if self.is_connected(overlapping_boundary, boundary_name):
-                    self.icon_x = new_x
-                    self.icon_y = new_y
-                    self.canvas.move(self.icon, delta_x, delta_y)
-                    return
-                else:
-                    return
-        
-        for boundary_coords in self.building_boundaries.values():
-            if self.is_within_boundary(new_x, new_y, boundary_coords):
+        # Check if the new position overlaps with any building boundary
+        overlapping_building = None
+        for building_name, boundary_coords in self.building_boundaries.items():
+            if self.is_overlapping(new_x, new_y, boundary_coords) == True:
+                print("helloworld")
                 self.icon_x = new_x
                 self.icon_y = new_y
                 self.canvas.move(self.icon, delta_x, delta_y)
-                return
+                overlapping_building = building_name
+                break
+
+        # Check if the new position overlaps with any road boundary
+        overlapping_road = None
+        for road_name, boundary_coords in self.road_boundaries.items():
+            if self.is_overlapping(new_x, new_y, boundary_coords):
+                print("helloworld2")
+                self.icon_x = new_x
+                self.icon_y = new_y
+                self.canvas.move(self.icon, delta_x, delta_y)
+                overlapping_road = road_name
+                break
+
+        
+        # Move the icon if the new position doesn't overlap with any building boundary
+        # if overlapping_building is None:
+        #     self.icon_x = new_x
+        #     self.icon_y = new_y
+        #     self.canvas.move(self.icon, delta_x, delta_y)
+        #     self.hide_collision_text()
+        # else:
+        #     # Display collision text for building
+        #     self.show_collision_text(overlapping_building)
+        #     # Update collision status for buildings
+        #     self.border_control.update_collision_status(overlapping_building, True)
+
+        # If the new position overlaps with a road boundary and the boundaries are connected
+        if overlapping_road is not None and overlapping_building is not None and self.is_connected(overlapping_building, overlapping_road):
+            # self.icon_x = new_x
+            # self.icon_y = new_y
+            # self.canvas.move(self.icon, delta_x, delta_y)
+            self.hide_collision_text()
+        elif overlapping_road is not None:
+            # Display collision text for road
+            self.show_collision_text(overlapping_road)
+
+
+            # print(f"Overlapping boundary: {overlapping_boundary}")
+
+        # for boundary_name, boundary_coords in self.road_boundaries.items():
+            
+            # if self.is_overlapping(new_x, new_y, boundary_coords):
+            #     if self.is_connected(overlapping_boundary, boundary_name):
+            #         print("hi")
+            #         print(new_x,new_y)
+            #         self.icon_x = new_x
+            #         self.icon_y = new_y
+            #         self.canvas.move(self.icon, delta_x, delta_y)
+            #         return
+            #     else:
+            #         return
+
+
+
+
+        # for boundary_coords in self.building_boundaries.values():
+        #     if self.is_within_boundary(new_x, new_y, boundary_coords):
+        #         self.icon_x = new_x
+        #         self.icon_y = new_y
+        #         self.canvas.move(self.icon, delta_x, delta_y)
+        #         print("Moved Inside of Object")
+               
+        #         break
+
+
+
+
 
 
         # # Check if the new position overlaps with any building boundary
@@ -245,13 +287,19 @@ class MapGUI:
         """Check if the given coordinates overlap with the specified boundary."""
         boundary_x1, boundary_y1 = boundary_coords[0]
         boundary_x2, boundary_y2 = boundary_coords[1]
-        return boundary_x1 < x < boundary_x2 and boundary_y1 < y < boundary_y2
+        # print(f"{boundary_x1} < x < {boundary_x2} and {boundary_y1} < y < {boundary_y2}")
+        # return boundary_x1 < x < boundary_x2 and boundary_y1 < y < boundary_y2
+        if boundary_x1 < x < boundary_x2 and boundary_y1 < y < boundary_y2:
+            print("hello")
+
+            return True
+        else:
+            return False
 
     # Add this helper method to check if two boundaries are connected
     def is_connected(self, boundary1_name, boundary2_name):
         """Check if two boundaries are connected."""
-        # Define your connection logic here, based on your boundary names
-        # For example, you can have a dictionary storing connections between boundaries
+        # Define your connection logic here, based on your boundary namess
         connections = {
             "church": ["church-lib"],
             "library": ["lib-bank", "lib-tav,twnhall"],
@@ -259,6 +307,7 @@ class MapGUI:
             "town_square": ["bank-twnsq", "twnsq-twnhall"],
             # Add more connections as needed
         }
+        print(boundary2_name, "  ", boundary1_name)
         return boundary2_name in connections.get(boundary1_name, [])
 
     def is_within_boundary(self, x, y, boundary_coords):
@@ -271,17 +320,21 @@ class MapGUI:
         
     def show_collision_text(self, building_name):
         """Show collision text for the specified building."""
+        
         if not self.border_control.get_collision_status(building_name):
+            print("showing collision text")
             # Collision text should be displayed only if collision status is False
-            self.collision_text.config(text=f"Collided with {building_name}")
+            self.collision_text.config(text = f"Collided with {building_name}")
             text_x = 10  # Adjust left margin
             text_y = self.canvas.winfo_height() + 10  # Below the canvas
-            self.canvas.coords(self.collision_text, text_x, text_y)
+            print(self.collision_text)  # Print the collision text object
+            
             self.collision_text.place(x=text_x, y=text_y)
 
     def hide_collision_text(self):
         """Hide collision text."""
-        self.collision_text.config(text="")  # Clear the text
+        print("hiding collision text")
+        self.collision_text.place_forget()  # Clear the text
 
 
 
