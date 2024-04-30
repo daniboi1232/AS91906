@@ -68,30 +68,6 @@ class Player:
 # print(bob.move())
 
 
-### NPC Class ###
-class NPC:
-    def __init__(self, name):
-        self.name = name
-        
-    
-    # def __str__(self):
-    #     return "this is an npc"
-    
-    # def interact(self):
-    #     pass
-
-    
-
-
-### Location Class ###
-class Loc:
-    def __init__(self, ):
-        pass
-
-    def __str__():
-        return ""
-
-
 ### GUI Class ###
 class MapGUI:
     """Class representing the main graphical user interface (GUI) for the application."""
@@ -104,7 +80,7 @@ class MapGUI:
         self.root.title("Movable Icon")
 
         # Load the background image
-        original_image = Image.open("map3.png")
+        original_image = Image.open("map4.png")
         max_width = 600
         max_height = 800
         resized_image = self.resize_image(original_image, max_width, max_height)
@@ -156,7 +132,7 @@ class MapGUI:
             "bank-rd2": [(448,29),(552,77)],
             "rd2-market": [(500,77),(552,162)],
             "twnsq-twnhall": [(329,202),(377,245)],
-            "market-blksmth": [(490,390),(545,310)], """not working for some reason"""
+            # "market-blksmth": [(490,390),(545,310)], """not working for some reason""" - removed due to map layout change
             "farm-rvrsde": [(136,465),(215,515)],
             "rvrsde-blksmth": [(323,465),(414,522)],
             "twnhall-market": [(388,255),(485,300)]
@@ -190,8 +166,8 @@ class MapGUI:
         self.icon = self.canvas.create_rectangle(50,50,75,75, fill="red")
 
         # Create a text object for displaying collision messages
-        self.collision_text = Label(self.root, text="You are at the Church", font=('Mistral 18 bold'))
-        self.collision_text.pack()
+        # self.collision_text = Label(self.root, text="You are at the Church", font=('Mistral 18 bold'))
+        # self.collision_text.pack()
         # Start location
         self.icon_x = 62.5
         self.icon_y = 62.5
@@ -206,7 +182,7 @@ class MapGUI:
         self.root.bind_all("<Down>", self.move_down)
 
         # Start the Tkinter event loop
-        self.root.mainloop()
+        # self.root.mainloop()
 
     def move_left(self, event):
         self.move_icon(-20, 0)
@@ -267,6 +243,7 @@ class MapGUI:
                 self.icon_x = new_x
                 self.icon_y = new_y
                 self.canvas.move(self.icon, delta_x, delta_y)
+                self.show_collision_text(building_name)
                 overlapping_building = building_name
                 break
 
@@ -409,13 +386,16 @@ class MapGUI:
         if not self.border_control.get_collision_status(building_name):
             print("showing collision text")
             # Collision text should be displayed only if collision status is False
-            self.collision_text.config(text = f"Collided with {building_name}")
-            self.collision_text = Label(self.root, text=f"You are at the {building_name}", font=('Mistral 18 bold'))
+            #self.collision_text.config(text = f"Collided with {building_name}")
+            print()
+            self.collision_text_1 = Label(self.root, text = "Ypu have collided")
+            self.collision_text_2 = Label(self.root, text=f"You are at the {building_name}", font=('Mistral 18 bold'))
             text_x = 10  # Adjust left margin
             text_y = self.canvas.winfo_height() + 10  # Below the canvas
-            print(self.collision_text)  # Print the collision text object
+            self.collision_text_1.place(x=text_x, y=text_y)
+            self.collision_text_2.place(x=text_x, y=text_y)
+            # print(self.collision_text_1)  # Print the collision text object
             
-            self.collision_text.place(x=text_x, y=text_y)
 
     def hide_collision_text(self):
         """Hide collision text."""
@@ -459,6 +439,16 @@ class MapGUI:
             new_height = int(height * aspect_ratio)
             return image.resize((new_width, new_height))
         return image
+    
+    #@staticmethod
+    def building_name(self):
+        print("Hjtgdfgjhgtf")
+        building_list=[]
+        for i in self.building_boundaries:
+            #print(i)
+            building_list.append(i)
+            #print(self.building_boundaries[0])
+        return building_list
 
     
 
@@ -530,6 +520,7 @@ class BorderControl:
 
     def churchtolib(self):
         print("collided with boundary")
+
 # def open_popup():
 #     """open_popup creates a new window on-top of the main window"""
 #     top= Toplevel(win)
@@ -551,8 +542,28 @@ class Weapon:
     def assign_holder(self, npc):
         self.holder = npc
         
+### NPC Class ###
+class NPC:
+    def __init__(self, name):
+        self.name = name
+        
+    def set_location(self, building):
+        self.location = building
 
-npc_list = [NPC("John"), NPC("Mary"), NPC("Tom"), NPC("Caleb"), NPC("Marcus")]
+
+    # def __str__(self):
+    #     return "this is an npc"
+    
+    # def interact(self):
+    #     pass
+
+    
+
+npc_list = [NPC("John"), 
+NPC("Mary"), 
+NPC("Tom"), 
+NPC("Caleb"), 
+NPC("Marcus")]
 
 weapon_list = [Weapon("Revolver","Shot through the head"),
 Weapon("Dagger","Stabbed through the aorta artery"),
@@ -562,10 +573,12 @@ Weapon("Bible","Head flattened by the word")]
 ### Setting values to different thingz ###
 #weapons = ["Revolver","Dagger","Poison","Rope","Crowbar","Bible"]
 
+# location_list = MapGUI.building
 
 ### Shuffling the items randomly ###
 random.shuffle(npc_list)
 random.shuffle(weapon_list)
+
 
 ### Assign weapons to NPCs ###
 for npc, weapon in zip(npc_list, weapon_list):
@@ -580,8 +593,17 @@ for weapon in weapon_list[len(npc_list):]:
     print(f"{weapon.name} is not held by any NPC")
 
 
-MapGUI()
+map_gui_instance = MapGUI()
+building_names = map_gui_instance.building_name()  # Call the building_name method on the instance# Create an instance of the MapGUI class
 
+# MapGUI()
+print(building_names)
+for npc, building_names in zip(npc_list, building_names):
+    npc.set_location(building_names)
+    print(npc.name, " is in ", npc.location)
+
+
+map_gui_instance.root.mainloop()
 
 
 
