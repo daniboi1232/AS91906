@@ -5,10 +5,11 @@ from tkinter import ttk
 from PIL import ImageTk, Image
 import os
 import random
-import time
+from time import sleep
 
 
 obj_collision = 0
+user_name = ""
 ### Player Class ###
 class Player:
     def __init__(self,name,location):
@@ -109,26 +110,33 @@ class Startup(tk.Frame):
         entry = tk.Entry(self.parent, selectbackground="lightblue", selectforeground="black")
         entry.pack()
         self.widgets_list.append(entry)
-        entry.config(text= entry.get(), font= ('Helvetica 13'))
+        
 
-        button=tk.Button(self.parent,text="Enter", command=lambda: self.start_game())
+        button=tk.Button(self.parent,text="Enter", command=lambda: self.start_game(entry))
         button.pack()
         self.widgets_list.append(button)
 
         
-    def start_game(self):
         
+    def start_game(self, entry):
+        
+        global user_name
+        user_name = entry.get()
+        print(user_name)
+
         # Create a progressbar widget
         progress = ttk.Progressbar(self.parent, orient="horizontal", length=300, mode="determinate")
         progress.pack(pady=20)
         self.widgets_list.append(progress)
+
+        
 
         progress.start()
 
         # Simulate a task that takes time to complete
         for i in range(101):
         # Simulate some work
-            time.sleep(0.05)  
+            sleep(0.05)  
             progress['value'] = i
             # Update the GUI
             self.update_idletasks()  
@@ -141,41 +149,72 @@ class Startup(tk.Frame):
     def switch_frame(self):
         for w in self.widgets_list:
             w.destroy()
-        self.parent.switch_frame(introduction)
+        self.parent.switch_frame(Introduction)
 
 
-class introduction(tk.Frame):
+# class introduction(tk.Frame):
+#     def __init__(self, parent):
+#         tk.Frame.__init__(self, parent)
+#         self.parent = parent
+#         self.widgets_list=[]
+#         self.Font = ("Comic Sans MS", 5)
+
+
+#         self.text = "You are a young adventurer who has just arrived in the land of the Ghetto. There has been a murder. Your job is to figure out who is the Murderer, where they murdered and with what weapon. Good luck on your adventures."
+
+
+#         self.i = 0 
+#         self.spacing = 0 
+ 
+ 
+#         for val in range(len(self.text)): 
+#             exec("self.l{0} = Label(text=self.text[{1}], wraplength=200)".format(val, val)) 
+ 
+#         self.appear() 
+ 
+ 
+#     def appear(self): 
+#         if not self.i >= len(self.text): 
+#             eval("self.l{0}.place(x=self.spacing, y=0)".format(self.i))
+#             self.i += 1 
+#             self.spacing += 13
+#         self.after(30, self.appear) 
+
+class Introduction(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         self.parent = parent
+        parent.geometry("600x800")
         self.widgets_list=[]
-        self.Font = ("Comic Sans MS", 5)
+
+        self.intro_text = tk.Text(self.parent, width=80, height=7, wrap=tk.WORD, font=("Comic Sans MS", 25))
+        self.intro_text.pack()
+
+        self.widgets_list.append(self.intro_text)
+
+        self.text = "You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures."
+
+        self.i = 0
+
+        # print(user_name)
+
+        self.appear()
 
 
-        self.text = "You are a young adventurer who has just arrived in the land of the Ghetto. There has been a murder. Your job is to figure out who is the Murderer, where they murdered and with what weapon. Good luck on your adventures."
-        # label = Label(self.parent, text = "You are a young adventurer who has just arrived in the land of the Ghetto. There has been a murder. Your job is to figure out who is the Murderer, where they murdered and with what weapon. Good luck on your adventures.", anchor="center",wraplength=200)
+        button=tk.Button(self.parent,text="Enter Game", command=lambda: self.switch_frames(),padx=5,pady=5 )
+        button.pack(pady=(20,0))
+        self.widgets_list.append(button)
 
+    def appear(self):
+        if self.i < len(self.text):
+            self.intro_text.insert(tk.END, self.text[self.i])
+            self.i += 1
+            self.parent.after(50, self.appear)
 
-        self.i = 0 
-        self.spacing = 0 
- 
- 
-        for val in range(len(self.text)): 
-            exec("self.l{0} = Label(text=self.text[{1}], wraplength=200)".format(val, val)) 
-            # exec("self.l{0} = label".format(val, val))
- 
-        self.appear() 
- 
- 
-    def appear(self): 
-        if not self.i >= len(self.text): 
-            eval("self.l{0}.place(x=self.spacing, y=0)".format(self.i))
-            self.i += 1 
-            self.spacing += 13
-        self.after(30, self.appear) 
-
-
-
+    def switch_frames(self):
+        for w in self.widgets_list:
+            w.destroy()
+        self.parent.switch_frame(MapGUI)
 
 
 
