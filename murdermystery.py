@@ -66,7 +66,7 @@ class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self._frame=None
-        self.switch_frame(Startup)
+        self.switch_frame(Rules)
 
     def switch_frame(self, frame_class):
         """Destroys current frame and replaces it with a new one."""
@@ -151,35 +151,6 @@ class Startup(tk.Frame):
             w.destroy()
         self.parent.switch_frame(Introduction)
 
-
-# class introduction(tk.Frame):
-#     def __init__(self, parent):
-#         tk.Frame.__init__(self, parent)
-#         self.parent = parent
-#         self.widgets_list=[]
-#         self.Font = ("Comic Sans MS", 5)
-
-
-#         self.text = "You are a young adventurer who has just arrived in the land of the Ghetto. There has been a murder. Your job is to figure out who is the Murderer, where they murdered and with what weapon. Good luck on your adventures."
-
-
-#         self.i = 0 
-#         self.spacing = 0 
- 
- 
-#         for val in range(len(self.text)): 
-#             exec("self.l{0} = Label(text=self.text[{1}], wraplength=200)".format(val, val)) 
- 
-#         self.appear() 
- 
- 
-#     def appear(self): 
-#         if not self.i >= len(self.text): 
-#             eval("self.l{0}.place(x=self.spacing, y=0)".format(self.i))
-#             self.i += 1 
-#             self.spacing += 13
-#         self.after(30, self.appear) 
-
 class Introduction(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -187,12 +158,12 @@ class Introduction(tk.Frame):
         parent.geometry("600x800")
         self.widgets_list=[]
 
-        self.intro_text = tk.Text(self.parent, width=80, height=7, wrap=tk.WORD, font=("Comic Sans MS", 25))
+        self.intro_text = tk.Text(self.parent, width=80, height=7.5, wrap=tk.WORD, font=("Comic Sans MS", 25))
         self.intro_text.pack()
 
         self.widgets_list.append(self.intro_text)
 
-        self.text = "You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures."
+        self.text = f"Welcome {user_name}, \nYou are a young adventurer who has happened to find themself in the land of the Ghetto... And there has been a murder. \nYour job is to figure out who is the Murderer, where they murdered and with what weapon.\n\nGood luck on your adventures."
 
         self.i = 0
 
@@ -201,23 +172,71 @@ class Introduction(tk.Frame):
         self.appear()
 
 
-        button=tk.Button(self.parent,text="Enter Game", command=lambda: self.switch_frames(),padx=5,pady=5 )
-        button.pack(pady=(20,0))
-        self.widgets_list.append(button)
+        button1=tk.Button(self.parent,text="Enter Game", command=lambda: self.switch_frames(MapGUI),padx=5,pady=5 )
+        button1.pack(pady=(20,0))
+        self.widgets_list.append(button1)
+
+        button2=tk.Button(self.parent,text="View Rules", command=lambda: self.switch_frames(Rules),padx=5,pady=5 )
+        button2.pack(pady=(20,0))
+        self.widgets_list.append(button2)
 
     def appear(self):
         if self.i < len(self.text):
             self.intro_text.insert(tk.END, self.text[self.i])
             self.i += 1
             self.parent.after(50, self.appear)
+            self.widgets_list.append(self.intro_text)
 
-    def switch_frames(self):
+
+    def switch_frames(self, dest):
         for w in self.widgets_list:
             w.destroy()
-        self.parent.switch_frame(MapGUI)
+        self.parent.switch_frame(dest)
 
 
 
+class Rules(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        parent.geometry("600x800")
+        self.widgets_list=[]
+
+        self.intro_text = tk.Text(self.parent, width=80, height=16, wrap=tk.WORD, font=("Comic Sans MS", 25))
+        self.intro_text.pack()
+        self.widgets_list.append(self.intro_text)
+
+
+        self.text = f"The Rules:\nYour character is signified by a red square, and to move your character,the arrow keys must be used.\nWhen entering a room, you will be given the option to view the weapon inside that room or the person inside the room.\nWhen you have assessed and figured out who the murder was, what weapon they used, and the location of the murder; you will be required to make your way back to the church to confess your sins aswell as give a suggestion of who you believe the murderer is.\nIf you are correct with your suggestion, the game will end and you will win\n\nGood luck on your adventures."
+
+        self.i = 0
+
+        # print(user_name)
+
+        self.appear()
+
+
+        button=tk.Button(self.parent,text="Back to Introduction", command=lambda: self.switch_frames(Introduction),padx=5,pady=5 )
+        button.pack(pady=(20,0))
+        self.widgets_list.append(button)
+
+        button1=tk.Button(self.parent,text="Continue to Game", command=lambda: self.switch_frames(MapGUI),padx=5,pady=5 )
+        button1.pack(pady=(20,0))
+        self.widgets_list.append(button1)
+
+    def appear(self):
+        if self.i < len(self.text):
+            self.intro_text.insert(tk.END, self.text[self.i])
+            self.i += 1
+            self.parent.after(50, self.appear)
+            
+            
+
+
+    def switch_frames(self, dest):
+        for w in self.widgets_list:
+            w.destroy()
+        self.parent.switch_frame(dest)
 
 ### GUI Class ###
 class MapGUI(tk.Frame):
@@ -228,13 +247,13 @@ class MapGUI(tk.Frame):
 
         tk.Frame.__init__(self, parent)
         self.parent = parent
-
+        parent.geometry("600x800")
         #self.title("Movable Icon")
 
         # Load the background image
         original_image = Image.open("map4.png")
         max_width = 600
-        max_height = 800
+        max_height = 600
         resized_image = self.resize_image(original_image, max_width, max_height)
         self.bg_img = ImageTk.PhotoImage(resized_image)
 
@@ -278,6 +297,7 @@ class MapGUI(tk.Frame):
             "twnhall-market": [(388,255),(485,300)]
         }
 
+        self.current_building =  None
 
         # Draw building boundaries
         for building_name, boundary_coords in self.building_boundaries.items():
@@ -342,19 +362,21 @@ class MapGUI(tk.Frame):
         overlapping_building = None
         for building_name, boundary_coords in self.building_boundaries.items():
             if self.is_overlapping(new_x, new_y, boundary_coords) == True:
-                print("helloworld")
+                if building_name!= self.current_building:
+                    self.current_building = building_name
+                    self.enter_building(building_name) # Run the method once
+                # print("helloworld")
                 self.icon_x = new_x
                 self.icon_y = new_y
                 self.canvas.move(self.icon, delta_x, delta_y)
-                self.show_collision_text(building_name)
-                overlapping_building = building_name
+                # overlapping_building = building_name
                 break
 
         # Check if the new position overlaps with any road boundary
         overlapping_road = None
         for road_name, boundary_coords in self.road_boundaries.items():
             if self.is_overlapping(new_x, new_y, boundary_coords):
-                print("helloworld2")
+                # print("helloworld2")
                 self.icon_x = new_x
                 self.icon_y = new_y
                 self.canvas.move(self.icon, delta_x, delta_y)
@@ -375,19 +397,53 @@ class MapGUI(tk.Frame):
         #     self.border_control.update_collision_status(overlapping_building, True)
 
         # If the new position overlaps with a road boundary and the boundaries are connected
-        if overlapping_road is not None and overlapping_building is not None and self.is_connected(overlapping_building, overlapping_road):
-            # self.icon_x = new_x
-            # self.icon_y = new_y
-            # self.canvas.move(self.icon, delta_x, delta_y)
-            self.hide_collision_text()
-        elif overlapping_road is not None:
-            # Display collision text for road
-            self.show_collision_text(overlapping_road)
+        # if overlapping_road is not None and overlapping_building is not None and self.is_connected(overlapping_building, overlapping_road):
+        #     # self.icon_x = new_x
+        #     # self.icon_y = new_y
+        #     # self.canvas.move(self.icon, delta_x, delta_y)
+        #     self.hide_collision_text()
+        # elif overlapping_road is not None:
+        #     # Display collision text for road
+        #     self.show_collision_text(overlapping_road)
 
 
             # print(f"Overlapping boundary: {overlapping_boundary}")
 
+
+    def enter_building(self, building_name):
+        # This method will be run once when the icon enters a new building
+        print(f"Entered {building_name}")
+        text_x = 300 # Adjust left margin
+        text_y = self.canvas.winfo_height() + 20 # Below the canvas
+        print(text_y)
+        self.label = tk.Label(self.parent, text=f"Entered {building_name}", font=("Comic Sans MS",20))
+        self.label.place(y=text_y)
+       
+        # self.canvas.tag_raise(self.label)
+
+
+
+        # option for viewing person or item in building
+        # two buttons, on with person, other with item
+
+        # if person button is pressed, then show person
+        person_button=tk.Button(self.parent,text="Person", command=lambda: self.show_person(),padx=5,pady=5 )
+        person_button.pack(pady=(20,0))
+        self.widgets_list.append(person_button)
+
+        # if item button is pressed, then show item
+        weapon_button=tk.Button(self.parent,text="Weapon", command=lambda: self.show_weapon(),padx=5,pady=5 )
+        weapon_button.pack(pady=(20,0))
+        self.widgets_list.append(weapon_button)
+
+    #do Thursday
+
+    def show_person(self):
+        pass
         
+    def show_weapon(self):
+        pass
+
     # Add this helper method to check if the new position overlaps with a boundary
     def is_overlapping(self, x, y, boundary_coords):
         """Check if the given coordinates overlap with the specified boundary."""
