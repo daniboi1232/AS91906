@@ -1,6 +1,7 @@
 #Import neccesary modules and libraries
 from tkinter import Tk, Canvas, Label, Text, Entry
 import tkinter as tk
+from tkinter import ttk
 from PIL import ImageTk, Image
 import os
 import random
@@ -59,15 +60,31 @@ class Player:
 # print(str(bob))
 # print(bob.move())
 
-class Startup(tk.Tk):
+
+class App(tk.Tk):
+    def __init__(self):
+        tk.Tk.__init__(self)
+        self._frame=None
+        self.switch_frame(Startup)
+
+    def switch_frame(self, frame_class):
+        """Destroys current frame and replaces it with a new one."""
+        new_frame = frame_class(self)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        self._frame.pack()
+        
+class Startup(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         self.parent = parent
+        self.widgets_list=[]
+        parent.geometry("600x800")
         
-
-
         self.label = tk.Label(self.parent, text="Welcome to the game!", font=("Comic Sans MS", 40, "bold"))
         self.label.pack()
+        self.widgets_list.append(self.label)
 
         self.player_name()
 
@@ -77,6 +94,8 @@ class Startup(tk.Tk):
         if player_name == True:
             self.label2 = tk.Label(self.parent, text="You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures.")
             self.label2.pack()
+            self.widgets_list.append(self.label2)
+
 
         # self.T = Text(startup, )
 
@@ -84,12 +103,79 @@ class Startup(tk.Tk):
         Font = ("Comic Sans MS", 20)
         self.askname = tk.Label(self.parent, text="What is your name?", font=(Font), pady= 30)
         self.askname.pack()
+        self.widgets_list.append(self.askname)
+
 
         entry = tk.Entry(self.parent, selectbackground="lightblue", selectforeground="black")
         entry.pack()
+        self.widgets_list.append(entry)
+        entry.config(text= entry.get(), font= ('Helvetica 13'))
 
-        self.button=tk.Button(self.parent,text="Enter", command=self.PassCheck)
-        self.button.pack()
+        button=tk.Button(self.parent,text="Enter", command=lambda: self.start_game())
+        button.pack()
+        self.widgets_list.append(button)
+
+        
+    def start_game(self):
+        
+        # Create a progressbar widget
+        progress = ttk.Progressbar(self.parent, orient="horizontal", length=300, mode="determinate")
+        progress.pack(pady=20)
+        self.widgets_list.append(progress)
+
+        progress.start()
+
+        # Simulate a task that takes time to complete
+        for i in range(101):
+        # Simulate some work
+            time.sleep(0.05)  
+            progress['value'] = i
+            # Update the GUI
+            self.update_idletasks()  
+        progress.stop()
+        self.switch_frame()
+
+
+    # Switch to the MapGUI frame
+
+    def switch_frame(self):
+        for w in self.widgets_list:
+            w.destroy()
+        self.parent.switch_frame(introduction)
+
+
+class introduction(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        self.widgets_list=[]
+        self.Font = ("Comic Sans MS", 5)
+
+
+        self.text = "You are a young adventurer who has just arrived in the land of the Ghetto. There has been a murder. Your job is to figure out who is the Murderer, where they murdered and with what weapon. Good luck on your adventures."
+        # label = Label(self.parent, text = "You are a young adventurer who has just arrived in the land of the Ghetto. There has been a murder. Your job is to figure out who is the Murderer, where they murdered and with what weapon. Good luck on your adventures.", anchor="center",wraplength=200)
+
+
+        self.i = 0 
+        self.spacing = 0 
+ 
+ 
+        for val in range(len(self.text)): 
+            exec("self.l{0} = Label(text=self.text[{1}], wraplength=200)".format(val, val)) 
+            # exec("self.l{0} = label".format(val, val))
+ 
+        self.appear() 
+ 
+ 
+    def appear(self): 
+        if not self.i >= len(self.text): 
+            eval("self.l{0}.place(x=self.spacing, y=0)".format(self.i))
+            self.i += 1 
+            self.spacing += 13
+        self.after(30, self.appear) 
+
+
+
 
 
 
@@ -98,10 +184,13 @@ class Startup(tk.Tk):
 class MapGUI(tk.Frame):
     """Class representing the main graphical user interface (GUI) for the application."""
 
-    def __init__(self):
+    def __init__(self, parent):
         """Initialize the MapGUI class."""
 
-        self.title("Movable Icon")
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+
+        #self.title("Movable Icon")
 
         # Load the background image
         original_image = Image.open("map4.png")
@@ -169,17 +258,12 @@ class MapGUI(tk.Frame):
         self.border_control = BorderControl(self.canvas, self.building_boundaries)
         self.border_control = BorderControl(self.canvas, self.road_boundaries)
 
-        # Assign boundaries to events
-        # self.canvas.tag_bind("church_coord", lambda event: self.border_control.church_func("church_coord"))
-        # self.canvas.tag_bind("library_coord", lambda event: self.on_road_click("library_coord"))
-
+        
 
         # Add a movable icon (rectangle)
         self.icon = self.canvas.create_rectangle(50,50,75,75, fill="red")
 
-        # Create a text object for displaying collision messages
-        # self.collision_text = Label(self.root, text="You are at the Church", font=('Mistral 18 bold'))
-        # self.collision_text.pack()
+        
         # Start location
         self.icon_x = 62.5
         self.icon_y = 62.5
@@ -188,10 +272,10 @@ class MapGUI(tk.Frame):
         # self.icon2 = self.canvas.create_rectangle(self.icon_x, self.icon_y,self.icon_x,self.icon_y, fill="black")
 
         # Bind arrow key events to move the icon
-        self.root.bind_all("<Left>", self.move_left)
-        self.root.bind_all("<Right>", self.move_right)
-        self.root.bind_all("<Up>", self.move_up)
-        self.root.bind_all("<Down>", self.move_down)
+        self.bind_all("<Left>", self.move_left)
+        self.bind_all("<Right>", self.move_right)
+        self.bind_all("<Up>", self.move_up)
+        self.bind_all("<Down>", self.move_down)
 
         # Start the Tkinter event loop
         # self.root.mainloop()
@@ -309,8 +393,8 @@ class MapGUI(tk.Frame):
             # Collision text should be displayed only if collision status is False
             #self.collision_text.config(text = f"Collided with {building_name}")
             print()
-            self.collision_text_1 = Label(self.root, text = "Ypu have collided")
-            self.collision_text_2 = Label(self.root, text=f"You are at the {building_name}", font=('Mistral 18 bold'))
+            self.collision_text_1 = Label(self.parent, text = "Ypu have collided")
+            self.collision_text_2 = Label(self.parent, text=f"You are at the {building_name}", font=('Mistral 18 bold'))
             text_x = 10  # Adjust left margin
             text_y = self.canvas.winfo_height() + 10  # Below the canvas
             self.collision_text_1.place(x=text_x, y=text_y)
@@ -442,12 +526,6 @@ class BorderControl:
     def churchtolib(self):
         print("collided with boundary")
 
-# def open_popup():
-#     """open_popup creates a new window on-top of the main window"""
-#     top= Toplevel(win)
-#     top.geometry("550x250")
-#     top.title("Child Window")
-#     Label(top, text= "Hello World!", font=('Mistral 18 bold')).place(x=150,y=80)
 
 
 ### Weapons Class ###
@@ -523,24 +601,11 @@ def main():
         print(f"{weapon.name} is not held by any NPC")
 
 
-    # map_gui_instance = MapGUI()# Create an instance of the MapGUI class
 
-    # building_names = map_gui_instance.building_name()  # Call the building_name method on the instance
+    app = App()
+    app.mainloop()
 
-    # MapGUI()
-    # print(building_names)
-    # for npc, building_names in zip(npc_list, building_names):
-    #     npc.set_location(building_names)
-    #     print(npc.name, " is in ", npc.location)
-
-
-    # map_gui_instance.root.mainloop()
-
-    root = tk.Tk()
-    startup_instance = Startup(root)
-    startup_instance.mainloop()
-
-
+main()
 
 
 
