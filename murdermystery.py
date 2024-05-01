@@ -1,20 +1,12 @@
 #Import neccesary modules and libraries
-from tkinter import Tk, Canvas, Label
+from tkinter import Tk, Canvas, Label, Text, Entry
+import tkinter as tk
 from PIL import ImageTk, Image
 import os
 import random
+import time
 
-### temporary map used for player movement testing ###
-### Turns out i dont need it ###
-# loc_list = [
-#     {"location": "A", "dest": ["B", "C", "D", "E", "F", "G"]},
-#     {"location": "B", "dest": ["C", "D", "E", "F", "G"]},
-#     {"location": "C", "dest": ["D", "E", "F", "G"]},
-#     {"location": "D", "dest": ["E", "F", "G"]},
-#     {"location": "E", "dest": ["F", "G"]},
-#     {"location": "F", "dest": ["G"]},
-#     {"location": "G", "dest": []}
-# ]
+
 obj_collision = 0
 ### Player Class ###
 class Player:
@@ -67,17 +59,49 @@ class Player:
 # print(str(bob))
 # print(bob.move())
 
+class Startup(tk.Tk):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        
+
+
+        self.label = tk.Label(self.parent, text="Welcome to the game!", font=("Comic Sans MS", 40, "bold"))
+        self.label.pack()
+
+        self.player_name()
+
+        #insert name
+
+        player_name = "hello"
+        if player_name == True:
+            self.label2 = tk.Label(self.parent, text="You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures.")
+            self.label2.pack()
+
+        # self.T = Text(startup, )
+
+    def player_name(self):
+        Font = ("Comic Sans MS", 20)
+        self.askname = tk.Label(self.parent, text="What is your name?", font=(Font), pady= 30)
+        self.askname.pack()
+
+        entry = tk.Entry(self.parent, selectbackground="lightblue", selectforeground="black")
+        entry.pack()
+
+        self.button=tk.Button(self.parent,text="Enter", command=self.PassCheck)
+        self.button.pack()
+
+
+
 
 ### GUI Class ###
-class MapGUI:
+class MapGUI(tk.Frame):
     """Class representing the main graphical user interface (GUI) for the application."""
 
     def __init__(self):
         """Initialize the MapGUI class."""
 
-        # Initialize Tkinter window
-        self.root = Tk()
-        self.root.title("Movable Icon")
+        self.title("Movable Icon")
 
         # Load the background image
         original_image = Image.open("map4.png")
@@ -87,25 +111,13 @@ class MapGUI:
         self.bg_img = ImageTk.PhotoImage(resized_image)
 
         # Create a canvas
-        self.canvas = Canvas(self.root, width=max_width, height=max_height)
+        self.canvas = Canvas(self.parent, width=max_width, height=max_height)
         self.canvas.pack()
 
         # Add the background image to the canvas
         self.canvas.create_image(0, 0, anchor="nw", image=self.bg_img)
         # # Add a movable icon (rectangle)
         # self.icon = self.canvas.create_rectangle(50,50,75,75, fill="red")
-
-        # Building Boundaries
-        # church = [(13,25),(95,165)]
-        # library = [(185,18),(293,142)]
-        # bank = [(365,12),(448,95)]
-        # town_square = [(317,138),(425,202)]
-        # market = [(485,162),(573,310)]
-        # town_hall = [(306,245),(388,328)]
-        # tavern = [(54,221),(172,323)]
-        # farm_stead = [(12,401),(136,534)]
-        # riverside = [(215,450),(323,545)]
-        # blacksmith = [(414,390),(550,545)]
 
         self.building_boundaries = {
             "church": [(13,25),(95,165)],
@@ -197,39 +209,7 @@ class MapGUI:
         self.move_icon(0, 20)
 
     def move_icon(self, delta_x, delta_y):
-        # new_x = self.icon_x + delta_x
-        # new_y = self.icon_y + delta_y
-
-        # # Check if the new position stays within any building boundaries
-        # within_building_boundary = False
-        # for boundary_coords in self.building_boundaries.values():
-        #     if self.is_within_boundary(new_x, new_y, boundary_coords):
-        #         within_building_boundary = True
-        #         break
-
-        # if within_building_boundary:
-        #     # Move the icon only if the new position stays within any building boundary
-        #     self.icon_x = new_x
-        #     self.icon_y = new_y
-        #     self.canvas.move(self.icon, delta_x, delta_y)
-
-        #     # Check for collision with building boundaries
-        #     collided_building = None
-        #     for boundary_name, boundary_coords in self.building_boundaries.items():
-        #         if self.check_collision(self.icon, boundary_coords):
-        #             collided_building = boundary_name
-        #             break
-
-        #     # Update collision status and clear text accordingly
-        #     if collided_building:
-        #         # Collision detected with a building
-        #         self.border_control.update_collision_status(collided_building, True)
-        #         self.show_collision_text(collided_building)
-        #     else:
-        #         # No collision detected with any building
-        #         self.border_control.clear_all_collision_status()
-        #         self.hide_collision_text()
-
+        
         new_x = self.icon_x + delta_x
         new_y = self.icon_y + delta_y
 
@@ -284,66 +264,7 @@ class MapGUI:
 
             # print(f"Overlapping boundary: {overlapping_boundary}")
 
-        # for boundary_name, boundary_coords in self.road_boundaries.items():
-            
-            # if self.is_overlapping(new_x, new_y, boundary_coords):
-            #     if self.is_connected(overlapping_boundary, boundary_name):
-            #         print("hi")
-            #         print(new_x,new_y)
-            #         self.icon_x = new_x
-            #         self.icon_y = new_y
-            #         self.canvas.move(self.icon, delta_x, delta_y)
-            #         return
-            #     else:
-            #         return
-
-
-
-
-        # for boundary_coords in self.building_boundaries.values():
-        #     if self.is_within_boundary(new_x, new_y, boundary_coords):
-        #         self.icon_x = new_x
-        #         self.icon_y = new_y
-        #         self.canvas.move(self.icon, delta_x, delta_y)
-        #         print("Moved Inside of Object")
-               
-        #         break
-
-
-
-
-
-
-        # # Check if the new position overlaps with any building boundary
-        # overlapping_boundary = None
-        # for boundary_name, boundary_coords in self.building_boundaries.items():
-        #     if self.is_overlapping(new_x, new_y, boundary_coords):
-        #         overlapping_boundary = boundary_name
-        #         break
-
-        # # Check if the new position overlaps with any road boundary
-        # for boundary_name, boundary_coords in self.road_boundaries.items():
-        #     if self.is_overlapping(new_x, new_y, boundary_coords):
-        #         # Check if the overlapping boundary is connected to the current one
-        #         if self.is_connected(overlapping_boundary, boundary_name):
-        #             # Move the icon if the boundaries are connected
-        #             self.icon_x = new_x
-        #             self.icon_y = new_y
-        #             self.canvas.move(self.icon, delta_x, delta_y)
-        #             return
-        #         else:
-        #             # Boundaries are not connected, don't allow movement
-        #             return
-
-        # # If there's no overlapping boundary, check if the new position stays within any building boundary
-        # for boundary_coords in self.building_boundaries.values():
-        #     if self.is_within_boundary(new_x, new_y, boundary_coords):
-        #         # Move the icon only if the new position stays within any building boundary
-        #         self.icon_x = new_x
-        #         self.icon_y = new_y
-        #         self.canvas.move(self.icon, delta_x, delta_y)
-        #         return
-
+        
     # Add this helper method to check if the new position overlaps with a boundary
     def is_overlapping(self, x, y, boundary_coords):
         """Check if the given coordinates overlap with the specified boundary."""
@@ -551,6 +472,13 @@ class NPC:
         self.location = building
 
 
+class menu:
+    def __init__(self):
+        pass
+
+
+
+
     # def __str__(self):
     #     return "this is an npc"
     
@@ -559,71 +487,60 @@ class NPC:
 
     
 
-npc_list = [NPC("John"), 
-NPC("Mary"), 
-NPC("Tom"), 
-NPC("Caleb"), 
-NPC("Marcus")]
 
-weapon_list = [Weapon("Revolver","Shot through the head"),
-Weapon("Dagger","Stabbed through the aorta artery"),
-Weapon("Poison","Cyanide pill hid inside the dinner"),
-Weapon("Crowbar","Head smashed in by a steel crowbar"),
-Weapon("Bible","Head flattened by the word")]
-### Setting values to different thingz ###
-#weapons = ["Revolver","Dagger","Poison","Rope","Crowbar","Bible"]
+def main():
+    npc_list = [NPC("John"), 
+    NPC("Mary"), 
+    NPC("Tom"), 
+    NPC("Caleb"), 
+    NPC("Marcus")]
 
-# location_list = MapGUI.building
+    weapon_list = [Weapon("Revolver","Shot through the head"),
+    Weapon("Dagger","Stabbed through the aorta artery"),
+    Weapon("Poison","Cyanide pill hid inside the dinner"),
+    Weapon("Crowbar","Head smashed in by a steel crowbar"),
+    Weapon("Bible","Head flattened by the word")]
+    ### Setting values to different thingz ###
+    #weapons = ["Revolver","Dagger","Poison","Rope","Crowbar","Bible"]
 
-### Shuffling the items randomly ###
-random.shuffle(npc_list)
-random.shuffle(weapon_list)
+    # location_list = MapGUI.building
 
-
-### Assign weapons to NPCs ###
-for npc, weapon in zip(npc_list, weapon_list):
-    Weapon.assign_holder(weapon,npc)
-    #print(f"{Weapon.name} is held by {NPC.name}")
-    print(weapon.name," is held by ",npc.name)
-    #print(self.holder)
-# If the number of NPCs and weapons are different, handle the remaining NPCs or weapons as needed
-for npc in npc_list[len(weapon_list):]:
-    print(f"No weapon assigned to {npc.name}")
-for weapon in weapon_list[len(npc_list):]:
-    print(f"{weapon.name} is not held by any NPC")
+    ### Shuffling the items randomly ###
+    random.shuffle(npc_list)
+    random.shuffle(weapon_list)
 
 
-map_gui_instance = MapGUI()
-building_names = map_gui_instance.building_name()  # Call the building_name method on the instance# Create an instance of the MapGUI class
-
-# MapGUI()
-print(building_names)
-for npc, building_names in zip(npc_list, building_names):
-    npc.set_location(building_names)
-    print(npc.name, " is in ", npc.location)
-
-
-map_gui_instance.root.mainloop()
-
-
+    ### Assign weapons to NPCs ###
+    for npc, weapon in zip(npc_list, weapon_list):
+        Weapon.assign_holder(weapon,npc)
+        #print(f"{Weapon.name} is held by {NPC.name}")
+        print(weapon.name," is held by ",npc.name)
+        #print(self.holder)
+    # If the number of NPCs and weapons are different, handle the remaining NPCs or weapons as needed
+    for npc in npc_list[len(weapon_list):]:
+        print(f"No weapon assigned to {npc.name}")
+    for weapon in weapon_list[len(npc_list):]:
+        print(f"{weapon.name} is not held by any NPC")
 
 
+    # map_gui_instance = MapGUI()# Create an instance of the MapGUI class
+
+    # building_names = map_gui_instance.building_name()  # Call the building_name method on the instance
+
+    # MapGUI()
+    # print(building_names)
+    # for npc, building_names in zip(npc_list, building_names):
+    #     npc.set_location(building_names)
+    #     print(npc.name, " is in ", npc.location)
+
+
+    # map_gui_instance.root.mainloop()
+
+    root = tk.Tk()
+    startup_instance = Startup(root)
+    startup_instance.mainloop()
 
 
 
-
-
-# ##testing printing of image for future map
-# root = Tk()
-# root.title("Tkinter Image test")
-# root.geometry('600x400')
-# img = ImageTk.PhotoImage(Image.open("wavestest.jpeg"))
-
-# ##defining the panel sizes
-# panel = Label(root, image = img)
-# panel.pack(side = "left", expand = "False")
-
-# ##runs root loop
-# root.mainloop()
 
 
