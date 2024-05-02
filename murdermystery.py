@@ -10,6 +10,8 @@ from time import sleep
 
 obj_collision = 0
 user_name = ""
+
+
 ### Player Class ###
 class Player:
     def __init__(self,name,location):
@@ -66,7 +68,7 @@ class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self._frame=None
-        self.switch_frame(Rules)
+        self.switch_frame(MapGUI)
 
     def switch_frame(self, frame_class):
         """Destroys current frame and replaces it with a new one."""
@@ -102,7 +104,7 @@ class Startup(tk.Frame):
 
     def player_name(self):
         Font = ("Comic Sans MS", 20)
-        self.askname = tk.Label(self.parent, text="What is your name?", font=(Font), pady= 30)
+        self.askname = tk.Label(self.parent, text="What is your name?", font=(Font), pady= 30, anchor='center')
         self.askname.pack()
         self.widgets_list.append(self.askname)
 
@@ -228,7 +230,7 @@ class Rules(tk.Frame):
         if self.i < len(self.text):
             self.intro_text.insert(tk.END, self.text[self.i])
             self.i += 1
-            self.parent.after(50, self.appear)
+            self.parent.after(10, self.appear)
             
             
 
@@ -298,6 +300,8 @@ class MapGUI(tk.Frame):
         }
 
         self.current_building =  None
+        self.labels = []
+        self.buttons = []
 
         # Draw building boundaries
         for building_name, boundary_coords in self.building_boundaries.items():
@@ -371,6 +375,9 @@ class MapGUI(tk.Frame):
                 self.canvas.move(self.icon, delta_x, delta_y)
                 # overlapping_building = building_name
                 break
+            else:
+                if self.current_building is not None:
+                    self.exit_building()
 
         # Check if the new position overlaps with any road boundary
         overlapping_road = None
@@ -417,8 +424,8 @@ class MapGUI(tk.Frame):
         text_y = self.canvas.winfo_height() + 20 # Below the canvas
         print(text_y)
         self.label = tk.Label(self.parent, text=f"Entered {building_name}", font=("Comic Sans MS",20))
-        self.label.place(y=text_y)
-       
+        self.label.pack()
+        self.labels.append(self.label)
         # self.canvas.tag_raise(self.label)
 
 
@@ -429,20 +436,78 @@ class MapGUI(tk.Frame):
         # if person button is pressed, then show person
         person_button=tk.Button(self.parent,text="Person", command=lambda: self.show_person(),padx=5,pady=5 )
         person_button.pack(pady=(20,0))
-        self.widgets_list.append(person_button)
+        self.buttons.append(person_button)
 
         # if item button is pressed, then show item
         weapon_button=tk.Button(self.parent,text="Weapon", command=lambda: self.show_weapon(),padx=5,pady=5 )
         weapon_button.pack(pady=(20,0))
-        self.widgets_list.append(weapon_button)
+        self.buttons.append(weapon_button)
+
+    def exit_building(self):
+        # This method will be run when the icon exits the current building
+        print("Exited building")
+        for label in self.labels:
+            label.destroy()
+        for button in self.buttons:
+            button.destroy()
+        self.labels = []
+        self.buttons = []
+        self.current_building = None
+
+
+    # def building_name(self):
+    #     building_list = []
+    #     for i in self.building_boundaries:
+    #         building_list.append(i)
+    #     return building_list
 
     #do Thursday
 
     def show_person(self):
-        pass
+        # Get the current building
+        current_building = self.current_building
+
+        global  npc_list
+
+        # Find the NPC in the current building
+        npc_in_building = None
+        for npc in npc_list:
+            if npc.location == current_building:
+                npc_in_building = npc
+                break
+
+        # Display the NPC
+        if npc_in_building is not None:
+            label = Label(self.parent, text=f"Person: {npc.name}", font=('Mistral 18 bold'))
+            label.pack()
+            self.labels.append(label)
+        else:
+            label = Label(self.parent, text="No person in this building", font=('Mistral 18 bold'))
+            label.pack()
+            self.labels.append(label)
+
         
     def show_weapon(self):
-        pass
+        # Get the current building
+        current_building = self.current_building
+
+        # Find the NPC in the current building
+        npc = None
+        for npc_obj in npc_list:
+            if npc_obj.location == current_building:
+                npc = npc_obj
+                break
+
+        # Get the weapon that the NPC is holding
+        if npc is not None:
+            weapon = npc.holder
+            label = Label(self.parent, text=f"Weapon: {weapon.name}", font=('Mistral 18 bold'))
+            label.pack()
+            self.labels.append(label)
+        else:
+            label = Label(self.parent, text="No weapon in this building", font=('Mistral 18 bold'))
+            label.pack()
+            self.labels.append(label)
 
     # Add this helper method to check if the new position overlaps with a boundary
     def is_overlapping(self, x, y, boundary_coords):
@@ -550,7 +615,7 @@ class MapGUI(tk.Frame):
             #print(self.building_boundaries[0])
         return building_list
 
-    
+
 
 # Class to handle borders
 class BorderControl:
@@ -640,9 +705,18 @@ class Weapon:
 class NPC:
     def __init__(self, name):
         self.name = name
+        self.location = None
+        self.holder = None
+
+    def __str__(self):
+        return "this is an npc"
         
     def set_location(self, building):
         self.location = building
+    
+    def set_weapon(self, weapon):
+        self.holder = weapon
+
 
 
 class menu:
@@ -659,20 +733,31 @@ class menu:
     #     pass
 
     
-
-
-def main():
-    npc_list = [NPC("John"), 
+npc_list = [NPC("John"), 
     NPC("Mary"), 
     NPC("Tom"), 
     NPC("Caleb"), 
     NPC("Marcus")]
 
-    weapon_list = [Weapon("Revolver","Shot through the head"),
+weapon_list = [Weapon("Revolver","Shot through the head"),
     Weapon("Dagger","Stabbed through the aorta artery"),
     Weapon("Poison","Cyanide pill hid inside the dinner"),
     Weapon("Crowbar","Head smashed in by a steel crowbar"),
     Weapon("Bible","Head flattened by the word")]
+
+building_names = ['church',
+                'library',
+                'bank', 
+                'town_square', 
+                'market', 
+                'town_hall', 
+                'tavern', 
+                'farm_stead', 
+                'riverside', 
+                'blacksmith']
+
+def main():
+    
     ### Setting values to different thingz ###
     #weapons = ["Revolver","Dagger","Poison","Rope","Crowbar","Bible"]
 
@@ -681,11 +766,13 @@ def main():
     ### Shuffling the items randomly ###
     random.shuffle(npc_list)
     random.shuffle(weapon_list)
+    random.shuffle(building_names)
 
 
     ### Assign weapons to NPCs ###
     for npc, weapon in zip(npc_list, weapon_list):
         Weapon.assign_holder(weapon,npc)
+        NPC.set_weapon(npc,weapon)
         #print(f"{Weapon.name} is held by {NPC.name}")
         print(weapon.name," is held by ",npc.name)
         #print(self.holder)
@@ -694,6 +781,10 @@ def main():
         print(f"No weapon assigned to {npc.name}")
     for weapon in weapon_list[len(npc_list):]:
         print(f"{weapon.name} is not held by any NPC")
+    
+    for npc, building_name in zip(npc_list, building_names):
+        print(building_name)
+        NPC.set_location(npc,building_name)
 
 
 
