@@ -11,64 +11,20 @@ from time import sleep
 obj_collision = 0
 user_name = ""
 
+building_of_choice = ""
+weapon_of_choice = ""
+murderer = ""
 
-### Player Class ###
-class Player:
-    def __init__(self,name,location):
-        self._name = name
-        self._location = location
-        #self._item = item
-
-    def __str__(self):
-        return  f'The player, {self._name}, is currently in {self._location}'
-    
-    ##Decorators##
-    #getter - shown as @property - is used for returning a variable
-    #setter - shown as @method.setter - is used for changing a variable
-    #deleter - shown as @method.deleter - is used for removing a variables contents
-
-    #def name for returning contents of variable
-    @property
-    def name(self): 
-        return self._name
-
-    #Change the name to newname
-    @name.setter
-    def name(self,newname):
-        self.name = newname
-
-    #def location for returning contents of variable
-    @property
-    def location(self):
-        return self._location
-
-    @location.setter
-    def location(self,newloc):
-        self.location = newloc
-
-    # @property
-    # def item(self):
-    #     return self._item
-
-    # @item.setter
-    # def item(self):
-    #     pass
-
-
-    ### def move to change the location of player based on players input moved to the map class due to different format ###
-
-
-# #test player
-# bob = Player("Bob","F")
-# print(str(bob))
-# print(bob.move())
+murderer_guess = ""
+weapon_guess = ""
+location_guess = "" 
 
 
 class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self._frame=None
-        self.switch_frame(MapGUI)
+        self.switch_frame(Startup)
 
     def switch_frame(self, frame_class):
         """Destroys current frame and replaces it with a new one."""
@@ -95,7 +51,7 @@ class Startup(tk.Frame):
 
         player_name = "hello"
         if player_name == True:
-            self.label2 = tk.Label(self.parent, text="You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures.")
+            self.label2 = tk.Label(self.parent, text="You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder.\n  Your best friend, Jacob has been found dead in the {location_of_choice}\nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures.")
             self.label2.pack()
             self.widgets_list.append(self.label2)
 
@@ -114,16 +70,25 @@ class Startup(tk.Frame):
         self.widgets_list.append(entry)
         
 
-        button=tk.Button(self.parent,text="Enter", command=lambda: self.start_game(entry))
+        button=tk.Button(self.parent,text="Enter", command=lambda: self.check_len(entry))
         button.pack()
         self.widgets_list.append(button)
 
-        
-        
-    def start_game(self, entry):
-        
+    def check_len(self, entry):
         global user_name
         user_name = entry.get()
+        if len(user_name) > 15:
+            label = tk.Label(self.parent, text="Your name is too long, please insert a new name.", font=("Comic Sans MS", 15))
+            label.pack()
+            self.widgets.append(label)
+        else:
+            self.start_game()
+            
+        
+    def start_game(self):
+        
+        global user_name
+        # user_name = entry.get()
         print(user_name)
 
         # Create a progressbar widget
@@ -160,12 +125,14 @@ class Introduction(tk.Frame):
         parent.geometry("600x800")
         self.widgets_list=[]
 
-        self.intro_text = tk.Text(self.parent, width=80, height=7.5, wrap=tk.WORD, font=("Comic Sans MS", 25))
+        self.intro_text = tk.Text(self.parent, width=80, height=9.2, wrap=tk.WORD, font=("Comic Sans MS", 25))
         self.intro_text.pack()
 
         self.widgets_list.append(self.intro_text)
 
-        self.text = f"Welcome {user_name}, \nYou are a young adventurer who has happened to find themself in the land of the Ghetto... And there has been a murder. \nYour job is to figure out who is the Murderer, where they murdered and with what weapon.\n\nGood luck on your adventures."
+        global building_of_choice
+
+        self.text = f"Welcome {user_name}, \nYou are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour best friend, Jacob has been found dead in the {building_of_choice}\nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures."
 
         self.i = 0
 
@@ -247,21 +214,28 @@ class MapGUI(tk.Frame):
     def __init__(self, parent):
         """Initialize the MapGUI class."""
 
+        self.labels = []
+        self.buttons = []
+        self.widgets = []
+
+
         tk.Frame.__init__(self, parent)
         self.parent = parent
         parent.geometry("600x800")
         #self.title("Movable Icon")
 
         # Load the background image
-        original_image = Image.open("map4.png")
+        self.original_image = Image.open("map4.png")
         max_width = 600
         max_height = 600
-        resized_image = self.resize_image(original_image, max_width, max_height)
+        resized_image = self.resize_image(self.original_image, max_width, max_height)
         self.bg_img = ImageTk.PhotoImage(resized_image)
+        # self.widgets.append(self.bg_img)
 
         # Create a canvas
         self.canvas = Canvas(self.parent, width=max_width, height=max_height)
         self.canvas.pack()
+        self.widgets.append(self.canvas)
 
         # Add the background image to the canvas
         self.canvas.create_image(0, 0, anchor="nw", image=self.bg_img)
@@ -300,8 +274,7 @@ class MapGUI(tk.Frame):
         }
 
         self.current_building =  None
-        self.labels = []
-        self.buttons = []
+        
 
         # Draw building boundaries
         for building_name, boundary_coords in self.building_boundaries.items():
@@ -418,6 +391,11 @@ class MapGUI(tk.Frame):
 
 
     def enter_building(self, building_name):
+
+        if building_name == "church":
+            self.vote=tk.Button(self.parent,text="Cast your final vote", command=lambda: self.cast_vote(),padx=5,pady=5 )
+            self.vote.pack(side="right", anchor='e')
+            self.buttons.append(self.vote)
         # This method will be run once when the icon enters a new building
         print(f"Entered {building_name}")
         text_x = 300 # Adjust left margin
@@ -434,16 +412,19 @@ class MapGUI(tk.Frame):
         # two buttons, on with person, other with item
 
         # if person button is pressed, then show person
-        person_button=tk.Button(self.parent,text="Person", command=lambda: self.show_person(),padx=5,pady=5 )
-        person_button.pack(pady=(20,0))
-        self.buttons.append(person_button)
+        self.person_button=tk.Button(self.parent,text="Person", command=lambda: self.show_person(),padx=5,pady=5 )
+        self.person_button.pack(pady=(20,0))
+        self.buttons.append(self.person_button)
 
         # if item button is pressed, then show item
-        weapon_button=tk.Button(self.parent,text="Weapon", command=lambda: self.show_weapon(),padx=5,pady=5 )
-        weapon_button.pack(pady=(20,0))
-        self.buttons.append(weapon_button)
+        self.weapon_button=tk.Button(self.parent,text="Weapon", command=lambda: self.show_weapon(),padx=5,pady=5 )
+        self.weapon_button.pack(pady=(20,0))
+        self.buttons.append(self.weapon_button)
 
     def exit_building(self):
+        self.weapon_button.config(state="normal")
+        self.person_button.config(state="normal")
+
         # This method will be run when the icon exits the current building
         print("Exited building")
         for label in self.labels:
@@ -455,6 +436,7 @@ class MapGUI(tk.Frame):
         self.current_building = None
 
 
+
     # def building_name(self):
     #     building_list = []
     #     for i in self.building_boundaries:
@@ -464,6 +446,8 @@ class MapGUI(tk.Frame):
     #do Thursday
 
     def show_person(self):
+        self.weapon_button.config(state="disabled")
+
         # Get the current building
         current_building = self.current_building
 
@@ -485,9 +469,11 @@ class MapGUI(tk.Frame):
             label = Label(self.parent, text="No person in this building", font=('Mistral 18 bold'))
             label.pack()
             self.labels.append(label)
+        self.person_button.config(state="disabled")
 
         
     def show_weapon(self):
+        self.person_button.config(state="disabled")
         # Get the current building
         current_building = self.current_building
 
@@ -508,7 +494,79 @@ class MapGUI(tk.Frame):
             label = Label(self.parent, text="No weapon in this building", font=('Mistral 18 bold'))
             label.pack()
             self.labels.append(label)
+        self.weapon_button.config(state="disabled")
 
+    def cast_vote(self):
+        for button in self.buttons:
+                button.destroy()
+        
+        for label in self.labels:
+            label.destroy()
+        # label for entry
+        person_label = tk.Label(self.parent, text="Vote for a Person")
+        person_label.pack()
+        self.labels.append(person_label)
+
+        # entry for person
+        person_entry = tk.Entry(self.parent, selectbackground="lightblue", selectforeground="black")
+        person_entry.pack()
+        self.widgets.append(person_entry)
+
+        # label for entry
+        weapon_label = tk.Label(self.parent, text="Vote for a Weapon")
+        weapon_label.pack()
+        self.labels.append(weapon_label)
+
+        # entry for weapon
+        weapon_entry = tk.Entry(self.parent, selectbackground="lightblue", selectforeground="black")
+        weapon_entry.pack()
+        self.widgets.append(weapon_entry)
+
+        # label for entry
+        location_label = tk.Label(self.parent, text="Vote for a Location")
+        location_label.pack()
+        self.labels.append(location_label)
+
+        # entry for location
+        location_entry = tk.Entry(self.parent, selectbackground="lightblue", selectforeground="black")
+        location_entry.pack()
+        self.widgets.append(location_entry)
+
+        # button to confirm vote
+        button=tk.Button(self.parent,text="Enter", command=lambda: self.vote_process(person_entry,weapon_entry,location_entry))
+        button.pack()
+        self.buttons.append(button)
+
+    def vote_process(self,person_entry,weapon_entry,location_entry):
+        # global murderer
+        # global weapon_of_choice
+        # global location_of_choice
+        
+        # print(person_entry)
+        # print(weapon_entry)
+        # print(location_entry)
+
+        person_guess = person_entry.get().lower()
+        weapon_guess = weapon_entry.get().lower()
+        location_guess = location_entry.get().lower()
+
+        print(person_guess)
+        print(weapon_guess)
+        print(location_guess)
+
+        print(murderer.name.lower())
+        print(weapon_of_choice.name.lower())
+        print(building_of_choice.lower())
+
+        if person_guess == murderer.name.lower() and weapon_guess == weapon_of_choice.name.lower() and location_guess == building_of_choice.lower():
+            print("helloooooooo")
+
+            self.switch_frames(Winning_screen)
+
+        else:
+            self.switch_frames(Losing_screen)
+
+            
     # Add this helper method to check if the new position overlaps with a boundary
     def is_overlapping(self, x, y, boundary_coords):
         """Check if the given coordinates overlap with the specified boundary."""
@@ -560,6 +618,7 @@ class MapGUI(tk.Frame):
             self.collision_text_1.place(x=text_x, y=text_y)
             self.collision_text_2.place(x=text_x, y=text_y)
             # print(self.collision_text_1)  # Print the collision text object
+            self.widget
             
 
     def hide_collision_text(self):
@@ -615,7 +674,105 @@ class MapGUI(tk.Frame):
             #print(self.building_boundaries[0])
         return building_list
 
+    def switch_frames(self, dest):
+        self.bg_img = None
+        self.original_image.close()
+        for i in self.labels:
+            i.destroy()
+        for i in self.buttons:
+            i.destroy()
+        for i in self.widgets:
+            i.destroy()
+        self.parent.switch_frame(dest)
 
+
+class Winning_screen(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        parent.geometry("600x800")
+        self.widgets_list=[]
+
+        self.intro_text = tk.Text(self.parent, width=80, height=6, wrap=tk.WORD, font=("Comic Sans MS", 25))
+        self.intro_text.pack()
+        self.widgets_list.append(self.intro_text)
+
+
+        self.text = f"Congratulation,\nYou made it through alive... suprisingly\nDespite the trauma which has been caused from Jacob's death, you continue making your life the best life that you possibly can."
+
+        self.i = 0
+
+        # print(user_name)
+
+        self.appear()
+
+
+        button=tk.Button(self.parent,text="Play Again", command=lambda: self.switch_frames(Startup),padx=5,pady=5 )
+        button.pack(pady=(20,0))
+        self.widgets_list.append(button)
+
+        button1=tk.Button(self.parent,text="Quit", command=lambda: self.quit(),padx=5,pady=5 )
+        button1.pack(pady=(20,0))
+        self.widgets_list.append(button1)
+
+    def appear(self):
+        if self.i < len(self.text):
+            self.intro_text.insert(tk.END, self.text[self.i])
+            self.i += 1
+            self.parent.after(50, self.appear)
+            
+            
+    def quit(self):
+        self.parent.destroy()
+
+    def switch_frames(self, dest):
+        for w in self.widgets_list:
+            w.destroy()
+        self.parent.switch_frame(dest)
+
+class Losing_screen(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+        parent.geometry("600x800")
+        self.widgets_list=[]
+
+        self.intro_text = tk.Text(self.parent, width=80, height=6.5, wrap=tk.WORD, font=("Comic Sans MS", 25))
+        self.intro_text.pack()
+        self.widgets_list.append(self.intro_text)
+
+
+        self.text = f"Well, you chose... poorly\n\nthere are some lessons to be learn from that but now is the decision of whether you quit or play again\n***i suggest you play again***"
+
+        self.i = 0
+
+        # print(user_name)
+
+        self.appear()
+
+
+        button=tk.Button(self.parent,text="Play Again", command=lambda: self.switch_frames(Startup),padx=5,pady=5 )
+        button.pack(pady=(20,0))
+        self.widgets_list.append(button)
+
+        button1=tk.Button(self.parent,text="Quit", command=lambda: self.quit(),padx=5,pady=5 )
+        button1.pack(pady=(20,0))
+        self.widgets_list.append(button1)
+
+    def appear(self):
+        if self.i < len(self.text):
+            self.intro_text.insert(tk.END, self.text[self.i])
+            self.i += 1
+            self.parent.after(50, self.appear)
+            
+            
+    def quit(self):
+        self.parent.destroy()
+
+    def switch_frames(self, dest):
+        for w in self.widgets_list:
+            w.destroy()
+        self.parent.switch_frame(dest)
 
 # Class to handle borders
 class BorderControl:
@@ -708,8 +865,8 @@ class NPC:
         self.location = None
         self.holder = None
 
-    def __str__(self):
-        return "this is an npc"
+    # def __str__(self):
+    #     return "this is an npc"
         
     def set_location(self, building):
         self.location = building
@@ -739,11 +896,11 @@ npc_list = [NPC("John"),
     NPC("Caleb"), 
     NPC("Marcus")]
 
-weapon_list = [Weapon("Revolver","Shot through the head"),
-    Weapon("Dagger","Stabbed through the aorta artery"),
-    Weapon("Poison","Cyanide pill hid inside the dinner"),
-    Weapon("Crowbar","Head smashed in by a steel crowbar"),
-    Weapon("Bible","Head flattened by the word")]
+weapon_list = [Weapon("Revolver","shot wound through the forehead"),
+    Weapon("Dagger","stabbing through the aorta artery"),
+    Weapon("Poison","cyanide pill hid inside his dinner"),
+    Weapon("Crowbar","whack by a strong bar"),
+    Weapon("Bible","flattenning by the word")]
 
 building_names = ['church',
                 'library',
@@ -768,8 +925,13 @@ def main():
     random.shuffle(weapon_list)
     random.shuffle(building_names)
 
+    global murderer
+    global weapon_of_choice
+    global building_of_choice
+    
+    
 
-    ### Assign weapons to NPCs ###
+        ### Assign weapons to NPCs ###
     for npc, weapon in zip(npc_list, weapon_list):
         Weapon.assign_holder(weapon,npc)
         NPC.set_weapon(npc,weapon)
@@ -782,9 +944,36 @@ def main():
     for weapon in weapon_list[len(npc_list):]:
         print(f"{weapon.name} is not held by any NPC")
     
-    for npc, building_name in zip(npc_list, building_names):
-        print(building_name)
-        NPC.set_location(npc,building_name)
+    for npc_object, building_name in zip(npc_list, building_names):
+        print(f"{npc_object.name} is in the {building_name}")
+        NPC.set_location(npc_object,building_name)
+
+
+    # Choose a random NPC as the murderer
+    murderer = npc_list[1]
+    weapon_of_choice = murderer.holder
+    building_of_choice = murderer.location
+
+    print(f"The murderer is {murderer.name} with the weapon {weapon_of_choice.name} in the {building_of_choice}.")
+
+    # print(f"{murderer.name} is the murderer")
+
+    # print(weapon_of_choice)
+    # print(f"{weapon_of_choice} is the weapon of choice")
+
+    # building_of_choice = murderer.location
+    # print(f"{building_of_choice} is the weapon of choice")
+
+    # while weapon_of_choice == None or building_of_choice == None:
+    #     # Choose a random NPC as the murderer
+    #     murderer = random.choice(npc_list)
+    #     print(f"{murderer.name} is the murderer")
+
+    #     weapon_of_choice = murderer.holder
+    #     print(f"{weapon_of_choice} is the weapon of choice")
+
+    #     building_of_choice = murderer.location
+    #     print(f"{building_of_choice} is the weapon of choice")
 
 
 
