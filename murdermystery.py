@@ -1,9 +1,8 @@
 #Import neccesary modules and libraries
-from tkinter import Tk, Canvas, Label, Text, Entry
+from tkinter import Canvas, Label
 import tkinter as tk
 from tkinter import ttk
 from PIL import ImageTk, Image
-import os
 import random
 from time import sleep
 
@@ -18,16 +17,26 @@ murderer = ""
 murderer_guess = ""
 weapon_guess = ""
 location_guess = "" 
-
-
 class App(tk.Tk):
+    """Class representing the main application window.
+
+    This class initializes the Tkinter Tk object and switches between frames.
+    """
     def __init__(self):
+        """
+        Initialize the Tkinter Tk object and switch to the MapGUI frame initially.
+        """
         tk.Tk.__init__(self)
         self._frame=None
         self.switch_frame(Startup)
 
     def switch_frame(self, frame_class):
-        """Destroys current frame and replaces it with a new one."""
+        """
+        Destroy the current frame and replace it with a new one.
+
+        Args:
+            frame_class (class): The frame class to switch to.
+        """
         new_frame = frame_class(self)
         if self._frame is not None:
             self._frame.destroy()
@@ -35,30 +44,39 @@ class App(tk.Tk):
         self._frame.pack()
         
 class Startup(tk.Frame):
+    """Class representing the startup frame.
+
+    This class initializes the frame for the startup screen, which prompts the user to enter their name.
+    """
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.widgets_list=[]
+        self.label_list=[]
         parent.geometry("600x800")
         
-        self.label = tk.Label(self.parent, text="Welcome to the game!", font=("Comic Sans MS", 40, "bold"))
-        self.label.pack()
-        self.widgets_list.append(self.label)
+        self.label1 = tk.Label(self.parent, text="Welcome to the game!", font=("Comic Sans MS", 40, "bold"))
+        self.label1.pack()
+        self.widgets_list.append(self.label1)
 
         self.player_name()
 
         #insert name
 
-        player_name = "hello"
-        if player_name == True:
-            self.label2 = tk.Label(self.parent, text="You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder.\n  Your best friend, Jacob has been found dead in the {location_of_choice}\nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures.")
-            self.label2.pack()
-            self.widgets_list.append(self.label2)
+        # player_name = "hello"
+        # if player_name:
+        #     self.label2 = tk.Label(self.parent, text="You are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder.\n  Your best friend, Jacob has been found dead in the {location_of_choice}\nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures.")
+        #     self.label2.pack()
+        #     self.widgets_list.append(self.label2)
 
 
         # self.T = Text(startup, )
 
     def player_name(self):
+        """Class representing the introduction frame.
+
+        This class initializes the frame for the introduction screen, which displays the game's story and options.
+        """
         Font = ("Comic Sans MS", 20)
         self.askname = tk.Label(self.parent, text="What is your name?", font=(Font), pady= 30, anchor='center')
         self.askname.pack()
@@ -75,18 +93,35 @@ class Startup(tk.Frame):
         self.widgets_list.append(button)
 
     def check_len(self, entry):
+        """
+        Check the length of the user's name.
+
+        Args:
+            entry (tk.Entry): The entry widget containing the user's name.
+        """
         global user_name
         user_name = entry.get()
+        for i in self.label_list:
+            i.destroy()
+        self.label_list.clear()
         if len(user_name) > 15:
-            label = tk.Label(self.parent, text="Your name is too long, please insert a new name.", font=("Comic Sans MS", 15))
+            label = tk.Label(self.parent, text="Name too long - Please use fewer characters", font=("Impact", 15))
+            label.config(bg="red", fg="black", borderwidth="1")
             label.pack()
-            self.widgets.append(label)
+            self.label_list.append(label)
+        elif len(user_name) == 0:
+            label2 = tk.Label(self.parent, text="Please enter a name...", font=("Impact", 15))
+            label2.config(bg="red", fg="black", borderwidth="1")
+            label2.pack()
+            self.label_list.append(label2)
         else:
             self.start_game()
             
         
     def start_game(self):
-        
+        """
+        Start the game.
+        """
         global user_name
         # user_name = entry.get()
         print(user_name)
@@ -114,12 +149,28 @@ class Startup(tk.Frame):
     # Switch to the MapGUI frame
 
     def switch_frame(self):
+        """
+        Switch to the specified frame.
+
+        Args:
+            dest (class): The frame class to switch to.
+        """
         for w in self.widgets_list:
             w.destroy()
         self.parent.switch_frame(Introduction)
 
 class Introduction(tk.Frame):
+    """Class representing the introduction frame.
+
+    This class initializes the frame for the introduction screen, which displays the game's story and options.
+    """
     def __init__(self, parent):
+        """
+        Initialize the Introduction class.
+
+        Args:
+            parent (tk.Tk): The parent widget.
+        """
         tk.Frame.__init__(self, parent)
         self.parent = parent
         parent.geometry("600x800")
@@ -132,7 +183,7 @@ class Introduction(tk.Frame):
 
         global building_of_choice
 
-        self.text = f"Welcome {user_name}, \nYou are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour best friend, Jacob has been found dead in the {building_of_choice}\nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures."
+        self.text = f"Welcome {user_name}, \nYou are a young adventurer who has just arrived in the land of the Ghetto. \nThere has been a murder. \nYour best friend, Jacob has been found dead from {weapon_of_choice.name} by {weapon_of_choice.description}\nYour job is to figure out who is the Murderer, where they murdered and with what weapon. \nGood luck on your adventures."
 
         self.i = 0
 
@@ -150,6 +201,9 @@ class Introduction(tk.Frame):
         self.widgets_list.append(button2)
 
     def appear(self):
+        """
+        Display the introduction text.
+        """
         if self.i < len(self.text):
             self.intro_text.insert(tk.END, self.text[self.i])
             self.i += 1
@@ -158,6 +212,12 @@ class Introduction(tk.Frame):
 
 
     def switch_frames(self, dest):
+        """
+        Switch to the specified frame.
+
+        Args:
+            dest (class): The frame class to switch to.
+        """
         for w in self.widgets_list:
             w.destroy()
         self.parent.switch_frame(dest)
@@ -165,7 +225,18 @@ class Introduction(tk.Frame):
 
 
 class Rules(tk.Frame):
+    """Class representing the rules frame.
+
+    This class initializes the frame for the rules screen, which displays the game's rules.
+    """
     def __init__(self, parent):
+        """
+        Initialize the Rules class.
+
+        Args:
+            parent (tk.Tk): The parent widget.
+        """
+
         tk.Frame.__init__(self, parent)
         self.parent = parent
         parent.geometry("600x800")
@@ -176,7 +247,7 @@ class Rules(tk.Frame):
         self.widgets_list.append(self.intro_text)
 
 
-        self.text = f"The Rules:\nYour character is signified by a red square, and to move your character,the arrow keys must be used.\nWhen entering a room, you will be given the option to view the weapon inside that room or the person inside the room.\nWhen you have assessed and figured out who the murder was, what weapon they used, and the location of the murder; you will be required to make your way back to the church to confess your sins aswell as give a suggestion of who you believe the murderer is.\nIf you are correct with your suggestion, the game will end and you will win\n\nGood luck on your adventures."
+        self.text = "The Rules:\nYour character is signified by a red square, and to move your character,the arrow keys must be used.\nWhen entering a room, you will be given the option to view the weapon inside that room or the person inside the room.\nWhen you have assessed and figured out who the murder was, what weapon they used, and the location of the murder; you will be required to make your way back to the church to confess your sins aswell as give a suggestion of who you believe the murderer is.\nIf you are correct with your suggestion, the game will end and you will win\n\nGood luck on your adventures."
 
         self.i = 0
 
@@ -194,6 +265,9 @@ class Rules(tk.Frame):
         self.widgets_list.append(button1)
 
     def appear(self):
+        """
+        Display the rules text.
+        """
         if self.i < len(self.text):
             self.intro_text.insert(tk.END, self.text[self.i])
             self.i += 1
@@ -203,16 +277,29 @@ class Rules(tk.Frame):
 
 
     def switch_frames(self, dest):
+        """
+        Switch to the specified frame.
+
+        Args:
+            dest (class): The frame class to switch to.
+        """
         for w in self.widgets_list:
             w.destroy()
         self.parent.switch_frame(dest)
 
 ### GUI Class ###
 class MapGUI(tk.Frame):
-    """Class representing the main graphical user interface (GUI) for the application."""
+    """Class representing the main graphical user interface (GUI) for the application.
+
+    This class initializes the frame for the map screen, which displays the game's map and allows the user to move their character.
+    """
 
     def __init__(self, parent):
-        """Initialize the MapGUI class."""
+        """Initialize the MapGUI class.
+
+        Args:
+            parent (tk.Tk): The parent widget.
+        """
 
         self.labels = []
         self.buttons = []
@@ -317,18 +404,44 @@ class MapGUI(tk.Frame):
         # self.root.mainloop()
 
     def move_left(self, event):
+        """Move the icon to the left.
+
+        Args:
+            event (tk.Event): The key press event.
+        """
         self.move_icon(-20, 0)
 
     def move_right(self, event):
+        """Move the icon to the right.
+
+        Args:
+            event (tk.Event): The key press event.
+        """
         self.move_icon(20, 0)
 
     def move_up(self, event):
+        """Move the icon up.
+
+        Args:
+            event (tk.Event): The key press event.
+        """
         self.move_icon(0, -20)
 
     def move_down(self, event):
+        """Move the icon down.
+
+        Args:
+            event (tk.Event): The key press event.
+        """
         self.move_icon(0, 20)
 
     def move_icon(self, delta_x, delta_y):
+        """Move the icon by the specified amount.
+
+        Args:
+            delta_x (int): The amount to move the icon horizontally.
+            delta_y (int): The amount to move the icon vertically.
+        """
         
         new_x = self.icon_x + delta_x
         new_y = self.icon_y + delta_y
@@ -336,9 +449,8 @@ class MapGUI(tk.Frame):
         print(f"New position: ({new_x}, {new_y})")
 
         # Check if the new position overlaps with any building boundary
-        overlapping_building = None
         for building_name, boundary_coords in self.building_boundaries.items():
-            if self.is_overlapping(new_x, new_y, boundary_coords) == True:
+            if self.is_overlapping(new_x, new_y, boundary_coords):
                 if building_name!= self.current_building:
                     self.current_building = building_name
                     self.enter_building(building_name) # Run the method once
@@ -353,14 +465,12 @@ class MapGUI(tk.Frame):
                     self.exit_building()
 
         # Check if the new position overlaps with any road boundary
-        overlapping_road = None
         for road_name, boundary_coords in self.road_boundaries.items():
             if self.is_overlapping(new_x, new_y, boundary_coords):
                 # print("helloworld2")
                 self.icon_x = new_x
                 self.icon_y = new_y
                 self.canvas.move(self.icon, delta_x, delta_y)
-                overlapping_road = road_name
                 break
 
         
@@ -391,14 +501,18 @@ class MapGUI(tk.Frame):
 
 
     def enter_building(self, building_name):
+        """Enter the specified building.
 
+        Args:
+            building_name (str): The name of the building to enter.
+        """
         if building_name == "church":
             self.vote=tk.Button(self.parent,text="Cast your final vote", command=lambda: self.cast_vote(),padx=5,pady=5 )
             self.vote.pack(side="right", anchor='e')
             self.buttons.append(self.vote)
         # This method will be run once when the icon enters a new building
         print(f"Entered {building_name}")
-        text_x = 300 # Adjust left margin
+
         text_y = self.canvas.winfo_height() + 20 # Below the canvas
         print(text_y)
         self.label = tk.Label(self.parent, text=f"Entered {building_name}", font=("Comic Sans MS",20))
@@ -422,6 +536,7 @@ class MapGUI(tk.Frame):
         self.buttons.append(self.weapon_button)
 
     def exit_building(self):
+        """Exit the current building"""
         self.weapon_button.config(state="normal")
         self.person_button.config(state="normal")
 
@@ -446,6 +561,8 @@ class MapGUI(tk.Frame):
     #do Thursday
 
     def show_person(self):
+        """Show the person in the current building."""
+    
         self.weapon_button.config(state="disabled")
 
         # Get the current building
@@ -473,6 +590,8 @@ class MapGUI(tk.Frame):
 
         
     def show_weapon(self):
+        """Show the weapon in the current building."""
+
         self.person_button.config(state="disabled")
         # Get the current building
         current_building = self.current_building
@@ -497,6 +616,8 @@ class MapGUI(tk.Frame):
         self.weapon_button.config(state="disabled")
 
     def cast_vote(self):
+        """Cast the user's vote for the murderer, weapon, and location."""
+
         for button in self.buttons:
                 button.destroy()
         
@@ -538,6 +659,8 @@ class MapGUI(tk.Frame):
         self.buttons.append(button)
 
     def vote_process(self,person_entry,weapon_entry,location_entry):
+        """Process the user's vote for the murderer, weapon, and location."""
+
         # global murderer
         # global weapon_of_choice
         # global location_of_choice
@@ -550,16 +673,16 @@ class MapGUI(tk.Frame):
         weapon_guess = weapon_entry.get().lower()
         location_guess = location_entry.get().lower()
 
-        print(person_guess)
-        print(weapon_guess)
-        print(location_guess)
+        # print(person_guess)
+        # print(weapon_guess)
+        # print(location_guess)
 
-        print(murderer.name.lower())
-        print(weapon_of_choice.name.lower())
-        print(building_of_choice.lower())
+        # print(murderer.name.lower())
+        # print(weapon_of_choice.name.lower())
+        # print(building_of_choice.lower())
 
         if person_guess == murderer.name.lower() and weapon_guess == weapon_of_choice.name.lower() and location_guess == building_of_choice.lower():
-            print("helloooooooo")
+            # print("helloooooooo")
 
             self.switch_frames(Winning_screen)
 
@@ -569,13 +692,22 @@ class MapGUI(tk.Frame):
             
     # Add this helper method to check if the new position overlaps with a boundary
     def is_overlapping(self, x, y, boundary_coords):
-        """Check if the given coordinates overlap with the specified boundary."""
+        """Check if the icon is overlapping with the specified boundary.
+
+        Args:
+            x (int): The x-coordinate of the icon.
+            y (int): The y-coordinate of the icon.
+            boundary_coords (tuple): A tuple of two tuples representing the boundary coordinates.
+
+        Returns:
+            bool: True if the icon is overlapping with the boundary, False otherwise.
+        """
         boundary_x1, boundary_y1 = boundary_coords[0]
         boundary_x2, boundary_y2 = boundary_coords[1]
         # print(f"{boundary_x1} < x < {boundary_x2} and {boundary_y1} < y < {boundary_y2}")
         # return boundary_x1 < x < boundary_x2 and boundary_y1 < y < boundary_y2
         if boundary_x1 < x < boundary_x2 and boundary_y1 < y < boundary_y2:
-            print("hello")
+            # print("hello")
 
             return True
         else:
@@ -583,8 +715,16 @@ class MapGUI(tk.Frame):
 
     # Add this helper method to check if two boundaries are connected
     def is_connected(self, boundary1_name, boundary2_name):
-        """Check if two boundaries are connected."""
-        # Define your connection logic here, based on your boundary namess
+        """Check if two boundaries are connected.
+
+        Args:
+            boundary1_name (str): The name of the first boundary.
+            boundary2_name (str): The name of the second boundary.
+
+        Returns:
+            bool: True if the boundaries are connected, False otherwise.
+        """
+
         connections = {
             "church": ["church-lib"],
             "library": ["lib-bank", "lib-tav,twnhall"],
@@ -596,7 +736,17 @@ class MapGUI(tk.Frame):
         return boundary2_name in connections.get(boundary1_name, [])
 
     def is_within_boundary(self, x, y, boundary_coords):
-        """Check if the given coordinates are within the specified boundary."""
+        """Check if the given coordinates are within the specified boundary.
+
+        Args:
+            x (int): The x-coordinate of the point.
+            y (int): The y-coordinate of the point.
+            boundary_coords (tuple): A tuple of two tuples representing the boundary coordinates.
+
+        Returns:
+            bool: True if the point is within the boundary, False otherwise.
+        """
+
         boundary_x1, boundary_y1 = boundary_coords[0]
         boundary_x2, boundary_y2 = boundary_coords[1]
         if (boundary_x1 < x < boundary_x2 and boundary_y1 < y < boundary_y2):
@@ -604,7 +754,11 @@ class MapGUI(tk.Frame):
         return False
         
     def show_collision_text(self, building_name):
-        """Show collision text for the specified building."""
+        """Show collision text for the specified building.
+
+        Args:
+            building_name (str): The name of the building.
+        """
         
         if not self.border_control.get_collision_status(building_name):
             print("showing collision text")
@@ -631,7 +785,15 @@ class MapGUI(tk.Frame):
     
 
     def check_collision(self, obj_id, boundary_coords):
-        # Get the coordinates of the object
+        """Check for collision between the given object and the specified boundary.
+
+        Args:
+            obj_id (int): The ID of the object to check for collision.
+            boundary_coords (tuple): A tuple of two tuples representing the boundary coordinates.
+
+        Returns:
+            bool: True if there is a collision, False otherwise.
+        """
         obj_x1, obj_y1, obj_x2, obj_y2 = self.canvas.coords(obj_id)
 
         # Get the coordinates of the building boundary
@@ -666,7 +828,7 @@ class MapGUI(tk.Frame):
     
     #@staticmethod
     def building_name(self):
-        print("Hjtgdfgjhgtf")
+        """Return a list of building names."""
         building_list=[]
         for i in self.building_boundaries:
             #print(i)
@@ -675,6 +837,11 @@ class MapGUI(tk.Frame):
         return building_list
 
     def switch_frames(self, dest):
+        """Switch to the specified frame.
+
+        Args:
+            dest (class): The frame class to switch to.
+        """
         self.bg_img = None
         self.original_image.close()
         for i in self.labels:
@@ -687,7 +854,19 @@ class MapGUI(tk.Frame):
 
 
 class Winning_screen(tk.Frame):
+    """Class representing the winning screen.
+
+    This class initializes the frame for the winning screen, which displays a message indicating that the user has won.
+    """
+
     def __init__(self, parent):
+        """
+        Initialize the Winning_screen class.
+
+        Args:
+            parent (tk.Tk): The parent widget.
+        """
+
         tk.Frame.__init__(self, parent)
         self.parent = parent
         parent.geometry("600x800")
@@ -698,7 +877,7 @@ class Winning_screen(tk.Frame):
         self.widgets_list.append(self.intro_text)
 
 
-        self.text = f"Congratulation,\nYou made it through alive... suprisingly\nDespite the trauma which has been caused from Jacob's death, you continue making your life the best life that you possibly can."
+        self.text = "Congratulation,\nYou made it through alive... suprisingly\nDespite the trauma which has been caused from Jacob's death, you continue making your life the best life that you possibly can."
 
         self.i = 0
 
@@ -716,6 +895,10 @@ class Winning_screen(tk.Frame):
         self.widgets_list.append(button1)
 
     def appear(self):
+        """
+        Display the winning message.
+        """
+
         if self.i < len(self.text):
             self.intro_text.insert(tk.END, self.text[self.i])
             self.i += 1
@@ -723,15 +906,30 @@ class Winning_screen(tk.Frame):
             
             
     def quit(self):
+        """
+        Quit the game.
+        """
         self.parent.destroy()
 
     def switch_frames(self, dest):
+        """
+        Switch to the specified frame.
+
+        Args:
+            dest (class): The frame class to switch to.
+        """
         for w in self.widgets_list:
             w.destroy()
         self.parent.switch_frame(dest)
 
 class Losing_screen(tk.Frame):
     def __init__(self, parent):
+        """
+        Initialize the Losing_screen class.
+
+        Args:
+            parent (tk.Tk): The parent widget.
+        """
         tk.Frame.__init__(self, parent)
         self.parent = parent
         parent.geometry("600x800")
@@ -742,7 +940,7 @@ class Losing_screen(tk.Frame):
         self.widgets_list.append(self.intro_text)
 
 
-        self.text = f"Well, you chose... poorly\n\nthere are some lessons to be learn from that but now is the decision of whether you quit or play again\n***i suggest you play again***"
+        self.text = f"Well {user_name}, you chose... poorly\n\nthere are some lessons to be learn from that but now is the decision of whether you quit or play again\n***i suggest you play again***"
 
         self.i = 0
 
@@ -760,6 +958,10 @@ class Losing_screen(tk.Frame):
         self.widgets_list.append(button1)
 
     def appear(self):
+        """
+        Display the losing message.
+        """
+
         if self.i < len(self.text):
             self.intro_text.insert(tk.END, self.text[self.i])
             self.i += 1
@@ -767,16 +969,29 @@ class Losing_screen(tk.Frame):
             
             
     def quit(self):
+        """
+        Quit the game.
+        """
+
         self.parent.destroy()
 
     def switch_frames(self, dest):
+        """
+        Switch to the specified frame.
+
+        Args:
+            dest (class): The frame class to switch to.
+        """
         for w in self.widgets_list:
             w.destroy()
         self.parent.switch_frame(dest)
 
 # Class to handle borders
 class BorderControl:
-    """Class responsible for controlling collisions and interactions with building boundaries."""
+    """Class responsible for controlling collisions and interactions with building boundaries.
+
+    This class initializes the BorderControl object, which handles collisions between the character and building boundaries.
+    """
 
     def __init__(self, canvas, building_boundaries):
         """Initialize the BorderControl class.
@@ -804,63 +1019,99 @@ class BorderControl:
         """Get collision status for the specified building."""
         return self.collision_status.get(building_name, False)
 
-    # Define a method for each building
-    def church_func(self):
-        print("Collided with church")
+    # # Define a method for each building
+    # def church_func(self):
+    #     print("Collided with church")
 
-    def library_func(self):
-        global obj_collision
-        if not self.collision_status["library"]:
-            self.collision_status["library"] = True
-            Label(self.canvas, text="Hello world!", font=('Mistral 18 bold')).place(x=20, y=600)
-        else:
-            print("Already collided with library")
+    # def library_func(self):
+    #     global obj_collision
+    #     if not self.collision_status["library"]:
+    #         self.collision_status["library"] = True
+    #         Label(self.canvas, text="Hello world!", font=('Mistral 18 bold')).place(x=20, y=600)
+    #     else:
+    #         print("Already collided with library")
 
-    def bank_func(self):
-        print("Collided with bank")
+    # def bank_func(self):
+    #     print("Collided with bank")
 
-    def town_square_func(self):
-        print("Collided with town square")
+    # def town_square_func(self):
+    #     print("Collided with town square")
 
-    def market_func(self):
-        print("Collided with market")
+    # def market_func(self):
+    #     print("Collided with market")
 
-    def town_hall_func(self):
-        print("Collided with town hall")
+    # def town_hall_func(self):
+    #     print("Collided with town hall")
 
-    def tavern_func(self):
-        print("Collided with tavern")
+    # def tavern_func(self):
+    #     print("Collided with tavern")
 
-    def farm_stead_func(self):
-        print("Collided with farm stead")
+    # def farm_stead_func(self):
+    #     print("Collided with farm stead")
 
-    def riverside_func(self):
-        print("Collided with riverside")
+    # def riverside_func(self):
+    #     print("Collided with riverside")
 
-    def blacksmith_func(self):
-        print("Collided with blacksmith")
+    # def blacksmith_func(self):
+    #     print("Collided with blacksmith")
 
-    def churchtolib(self):
-        print("collided with boundary")
+    # def churchtolib(self):
+    #     print("collided with boundary")
 
 
 
 ### Weapons Class ###
 class Weapon:
+    """Class representing a weapon.
+
+    This class initializes a weapon object, which can be held by an NPC.
+    """
     def __init__(self,name,description):
+        """
+        Initialize the Weapon class.
+
+        Args:
+            name (str): The name of the weapon.
+            description (str): The description of the weapon.
+        """
         self.name = name
         self.description = description
         self.holder = None
 
     def __str__(self):
-        pass
+        """
+        Return a string representation of the weapon.
+
+        Returns:
+            str: A string representation of the weapon.
+        """
+        return f"Weapon(name={self.name}, description={self.description}, holder={self.holder})"
+
+
 
     def assign_holder(self, npc):
+        """
+        Assign an NPC as the holder of the weapon.
+
+        Args:
+            npc (NPC): The NPC who will hold the weapon.
+        """
         self.holder = npc
         
 ### NPC Class ###
 class NPC:
+    """Class representing a non-player character (NPC).
+
+    This class initializes an NPC object, which can hold a weapon and be assigned a location.
+    """
     def __init__(self, name):
+        """
+        Initialize the Weapon class.
+
+        Args:
+            name (str): The name of the weapon.
+            description (str): The description of the weapon.
+        """
         self.name = name
         self.location = None
         self.holder = None
@@ -869,25 +1120,22 @@ class NPC:
     #     return "this is an npc"
         
     def set_location(self, building):
+        """
+        Set the location of the weapon.
+
+        Args:
+            building (str): The name of the building where the weapon is located.
+        """
         self.location = building
     
     def set_weapon(self, weapon):
+        """
+        Set the NPC as the holder of the weapon.
+
+        Args:
+            npc (NPC): The NPC who will hold the weapon.
+        """
         self.holder = weapon
-
-
-
-class menu:
-    def __init__(self):
-        pass
-
-
-
-
-    # def __str__(self):
-    #     return "this is an npc"
-    
-    # def interact(self):
-    #     pass
 
     
 npc_list = [NPC("John"), 
